@@ -1,0 +1,25 @@
+.ant-layout-sider .ant-menu {
+    border-right-width: 0px;
+}
+
+.sidebar-menu-itemgroup {
+    margin-bottom: 20px;
+}
+
+.sidebar-menu-itemgroup:first-child {
+    margin-top: 10px;
+}
+
+.sidebar-menu-itemgroup .ant-menu-item-group-title {
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.sidebar-menu-itemgroup .ant-menu-item {
+    height: 24px;
+    line-height: 24px;
+}
+
+.ant-menu-inline-collapsed .ant-menu-item-group-title {
+    display: none;
+}
