@@ -32,41 +32,36 @@ export default class RouteTableList extends React.Component {
             },
             {
                 title: 'Id',
-                dataIndex: 'id'
+                dataIndex: 'resource_id'
             },
         ]
     }
 
     getSelectedItem = (record) => {
-        return axios.get('/api/route-tables/' + record.id)
+        return axios.get('/api/route-tables/' + record.resource_id)
     }
 
     renderSelectedItem = (details) => {
         var routeCols = [
             {
                 title: 'Destination',
-                dataIndex: 'DestinationCidrBlock'
+                dataIndex: 'destination'
             },
             {
                 title: 'Next-Hop',
-                dataIndex: 'NextHop',
-                render: (hop, record) => {
-                    if (record.NextHopName) {
-                        return hop + ' (' + record.NextHopName + ')'
-                    } else {
-                        return hop
-                    }
-                }
+                dataIndex: 'next_hop'
             }
         ]
         return <Space size="large" direction="vertical" style={{ width: "100%" }}>
             <Descriptions bordered size="small" column={1}>
                 <Descriptions.Item label="Name">{details.name}</Descriptions.Item>
-                <Descriptions.Item label="Id">{details.id}</Descriptions.Item>
+                <Descriptions.Item label="Id">{details.resource_id}</Descriptions.Item>
+                <Descriptions.Item label="Region">{details.region}</Descriptions.Item>
+                <Descriptions.Item label="Subnets">{details.subnets}</Descriptions.Item>
             </Descriptions>
             <Typography.Title level={5}>Routes</Typography.Title>
             <Table size="small" bordered pagination={false} rowSelection={false}
-                columns={routeCols} dataKey="DestinationCidrBlock"
+                columns={routeCols} dataKey="destination"
                 dataSource={details.routes} />
         </Space>
 

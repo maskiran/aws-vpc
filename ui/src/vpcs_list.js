@@ -30,7 +30,7 @@ export default class VpcsList extends React.Component {
                 title: 'Name',
                 dataIndex: 'name',
                 render: (name, record) => {
-                    return <Link to={"/vpcs/" + record.id}>{name}</Link> 
+                    return <Link to={"/vpcs/" + record.resource_id}>{name}</Link> 
                 }
             },
             {

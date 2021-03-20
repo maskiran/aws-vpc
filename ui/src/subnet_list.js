@@ -32,7 +32,7 @@ export default class SubnetList extends React.Component {
             },
             {
                 title: 'Id',
-                dataIndex: 'id'
+                dataIndex: 'resource_id'
             },
             {
                 title: 'CIDR',
@@ -46,40 +46,34 @@ export default class SubnetList extends React.Component {
     }
 
     getSelectedItem = (record) => {
-        return axios.get('/api/subnets/' + record.id)
+        return axios.get('/api/subnets/' + record.resource_id)
     }
 
     renderSelectedItem = (details) => {
         var routeCols = [
             {
                 title: 'Destination',
-                dataIndex: 'DestinationCidrBlock'
+                dataIndex: 'destination'
             },
             {
                 title: 'Next-Hop',
-                dataIndex: 'NextHop',
-                render: (hop, record) => {
-                    if (record.NextHopName) {
-                        return hop + ' (' + record.NextHopName + ')'
-                    } else {
-                        return hop
-                    }
-                }
+                dataIndex: 'next_hop',
             }
         ]
         return <Space size="large" direction="vertical" style={{ width: "100%" }}>
             <Descriptions bordered size="small" column={1}>
                 <Descriptions.Item label="Name">{details.name}</Descriptions.Item>
-                <Descriptions.Item label="Id">{details.id}</Descriptions.Item>
+                <Descriptions.Item label="Id">{details.resource_id}</Descriptions.Item>
+                <Descriptions.Item label="Region / AZ">{details.region} / {details.az}</Descriptions.Item>
+                <Descriptions.Item label="Account">{details.account_id}</Descriptions.Item>
                 <Descriptions.Item label="CIDR">{details.cidr}</Descriptions.Item>
-                <Descriptions.Item label="AZ">{details.az}</Descriptions.Item>
                 <Descriptions.Item label="Route Table">
-                    {details['route-table-name']} - {details['route-table-id']}
+                    {details['route_table']['name']} / {details['route_table']['resource_id']}
                 </Descriptions.Item>
             </Descriptions>
             <Typography.Title level={5}>Routes</Typography.Title>
             <Table size="small" bordered pagination={false} rowSelection={false}
-                columns={routeCols} dataKey="DestinationCidrBlock"
+                columns={routeCols} dataKey="destination"
                 dataSource={details.routes} />
         </Space>
     }

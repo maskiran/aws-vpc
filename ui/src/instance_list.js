@@ -3,12 +3,15 @@ import _ from 'lodash';
 import ItemsList from 'react-antd-itemslist';
 import axios from 'axios';
 import { Descriptions, Space, Table, Tabs, Typography } from 'antd';
+import AWSTags from './aws_tags';
+import AWSNetworkInterfaces from './aws_network_interfaces';
 
 export default class InstanceList extends React.Component {
     render() {
         return <ItemsList
             tableTitle="Instances"
             itemsListMethod={this.getInstancesList}
+            itemViewerWidth="60%"
             columns={this.getTableColumns()}
             pagination={false}
             rowActions={['deleteItem']}
@@ -33,25 +36,34 @@ export default class InstanceList extends React.Component {
             },
             {
                 title: 'Id',
-                dataIndex: 'id'
+                dataIndex: 'resource_id'
             },
             {
                 title: 'Launch Time',
-                dataIndex: 'launch_time'
+                dataIndex: 'launch_time',
+                render: (text) => {
+                    return text.$date
+                }
             },
             {
                 title: 'Type',
                 dataIndex: 'instance_type'
             },
             {
+                title: 'AZ',
+                dataIndex: 'az'
+            },
+            {
+                title: 'State',
+                dataIndex: 'state'
+            },
+            {
                 title: 'IP Address',
-                dataIndex: 'private_ip_address',
-                render: (text, record) => {
-                    if (record.public_ip_address) {
-                        return record.public_ip_address + ' / ' + text
-                    } else {
-                        return text
-                    }
+                dataIndex: 'network_interfaces',
+                render: (intfList) => {
+                    return intfList.map(intf => {
+                        return intf.private_ip
+                    }).join(", ")
                 }
             },
             {
@@ -71,21 +83,27 @@ export default class InstanceList extends React.Component {
     }
 
     getSelectedItem = (record) => {
-        return axios.get('/api/instances/' + record.id)
+        return axios.get('/api/instances/' + record.resource_id)
     }
 
     renderSelectedItem = (details) => {
         return <Space size="large" direction="vertical" style={{ width: "100%" }}>
             <Descriptions bordered size="small" column={1}>
                 <Descriptions.Item label="Name">{details.name}</Descriptions.Item>
-                <Descriptions.Item label="Id">{details.id}</Descriptions.Item>
+                <Descriptions.Item label="Id">{details.resource_id}</Descriptions.Item>
+                <Descriptions.Item label="Region / AZ">{details.region} / {details.az}</Descriptions.Item>
+                <Descriptions.Item label="Account">{details.account_id}</Descriptions.Item>
+                <Descriptions.Item label="Key Name">{details.key_name}</Descriptions.Item>
+                <Descriptions.Item label="Launch Time">{details.launch_time.$date}</Descriptions.Item>
+                <Descriptions.Item label="State">{details.state}</Descriptions.Item>
+                <Descriptions.Item label="Instance Type">{details.instance_type}</Descriptions.Item>
             </Descriptions>
             <Tabs>
-                <Tabs.TabPane tab="Inbound Rules" key="inbound">
-                    {this.renderRules(details.inbound_rules)}
+                <Tabs.TabPane tab="Network Interfaces" key="network">
+                    <AWSNetworkInterfaces interfaces={details.network_interfaces} />
                 </Tabs.TabPane>
-                <Tabs.TabPane tab="Outbound Rules" key="outbound">
-                    {this.renderRules(details.outbound_rules)}
+                <Tabs.TabPane tab="Tags" key="Tag">
+                    <AWSTags tags={details.tags} />
                 </Tabs.TabPane>
             </Tabs>
         </Space>

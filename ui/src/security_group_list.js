@@ -32,13 +32,13 @@ export default class SecurityGroupList extends React.Component {
             },
             {
                 title: 'Id',
-                dataIndex: 'id'
+                dataIndex: 'resource_id'
             },
         ]
     }
 
     getSelectedItem = (record) => {
-        return axios.get('/api/security-groups/' + record.id)
+        return axios.get('/api/security-groups/' + record.resource_id)
     }
 
     renderSelectedItem = (details) => {
@@ -49,10 +49,10 @@ export default class SecurityGroupList extends React.Component {
             </Descriptions>
             <Tabs>
                 <Tabs.TabPane tab="Inbound Rules" key="inbound">
-                    {this.renderRules(details.inbound_rules)}
+                    {this.renderRules(details.ingress_rules)}
                 </Tabs.TabPane>
                 <Tabs.TabPane tab="Outbound Rules" key="outbound">
-                    {this.renderRules(details.outbound_rules)}
+                    {this.renderRules(details.egress_rules)}
                 </Tabs.TabPane>
             </Tabs>
         </Space>
@@ -66,7 +66,7 @@ export default class SecurityGroupList extends React.Component {
         var cols = [
             {
                 title: 'Protocol',
-                dataIndex: 'IpProtocol',
+                dataIndex: 'protocol',
                 render: (text) => {
                     if (text === "-1") {
                         return 'All'
@@ -76,40 +76,24 @@ export default class SecurityGroupList extends React.Component {
                 }
             },
             {
+                title: 'Sources',
+                dataIndex: 'source'
+            },
+            {
                 title: 'Ports',
                 dataIndex: 'ignore',
                 render: (text, record) => {
-                    if (record.FromPort >= 0 && record.ToPort <= 65535) {
-                        if (record.FromPort !== record.ToPort) {
-                            return record.FromPort + ' - ' + record.ToPort
+                    if (record.start_port >= 0 && record.end_port <= 65535) {
+                        if (record.start_port !== record.end_port) {
+                            return record.start_port + ' - ' + record.end_port
                         } else {
-                            return record.FromPort
+                            return record.start_port || 'All'
                         }
                     } else {
                         return text
                     }
                 }
             },
-            {
-                title: 'Sources',
-                dataIndex: 'ip_ranges',
-                render: (text, record) => {
-                    var data = [];
-                    if (record.IpRanges) {
-                        var ipRanges = record.IpRanges.map(item => {
-                            return item.CidrIp
-                        })
-                        data = data.concat(ipRanges)
-                    }
-                    if (record.UserIdGroupPairs) {
-                        var sgGroups = record.UserIdGroupPairs.map(item => {
-                            return item.GroupId
-                        })
-                        data = data.concat(sgGroups)
-                    }
-                    return data.join(", ")
-                }
-            }
         ]
         return <Table size="small" bordered pagination={false} rowSelection={false}
             columns={cols} dataKey="id"
