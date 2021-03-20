@@ -39,10 +39,15 @@ def sync_instances(region='us-east-1'):
 def get_network_interfaces(rsp_interfaces_list):
     interfaces = []
     for intf in rsp_interfaces_list:
+        subnet_details = db.get_item(models.Subnet, resource_id=intf['SubnetId'])
         interfaces.append({
             'mac': intf['MacAddress'],
             'private_ip': intf['PrivateIpAddress'],
             'subnet': intf['SubnetId'],
+            'subnet': {
+                'resource_id': intf['SubnetId'],
+                'name': subnet_details['name']
+            },
             'src_dst_check': intf['SourceDestCheck'],
             'security_groups': [{'name': sg['GroupName'], 'resource_id': sg['GroupId']}
                                 for sg in intf['Groups']],
