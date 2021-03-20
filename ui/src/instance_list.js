@@ -21,9 +21,12 @@ export default class InstanceList extends React.Component {
         />
     }
 
-    getInstancesList = () => {
+    getInstancesList = (search) => {
         return axios.get('/api/instances', {
-            params: { vpc_id: this.props.vpc_id }
+            params: {
+                vpc_id: this.props.vpc_id,
+                search: search
+            }
         })
     }
 
@@ -89,14 +92,12 @@ export default class InstanceList extends React.Component {
     renderSelectedItem = (details) => {
         return <Space size="large" direction="vertical" style={{ width: "100%" }}>
             <Descriptions bordered size="small" column={1}>
-                <Descriptions.Item label="Name">{details.name}</Descriptions.Item>
-                <Descriptions.Item label="Id">{details.resource_id}</Descriptions.Item>
+                <Descriptions.Item label="Name / Id">{details.name} / {details.resource_id}</Descriptions.Item>
                 <Descriptions.Item label="Region / AZ">{details.region} / {details.az}</Descriptions.Item>
                 <Descriptions.Item label="Account">{details.account_id}</Descriptions.Item>
-                <Descriptions.Item label="Key Name">{details.key_name}</Descriptions.Item>
-                <Descriptions.Item label="Launch Time">{details.launch_time.$date}</Descriptions.Item>
-                <Descriptions.Item label="State">{details.state}</Descriptions.Item>
                 <Descriptions.Item label="Instance Type">{details.instance_type}</Descriptions.Item>
+                <Descriptions.Item label="Key Name">{details.key_name}</Descriptions.Item>
+                <Descriptions.Item label="Launch Time / State">{details.launch_time.$date} / {details.state}</Descriptions.Item>
             </Descriptions>
             <Tabs>
                 <Tabs.TabPane tab="Network Interfaces" key="network">

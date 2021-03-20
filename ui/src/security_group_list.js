@@ -17,9 +17,12 @@ export default class SecurityGroupList extends React.Component {
         />
     }
 
-    getRouteTablesList = () => {
+    getRouteTablesList = (search) => {
         return axios.get('/api/security-groups', {
-            params: { vpc_id: this.props.vpc_id }
+            params: {
+                vpc_id: this.props.vpc_id,
+                search: search
+            }
         })
     }
 
@@ -96,7 +99,7 @@ export default class SecurityGroupList extends React.Component {
             },
         ]
         return <Table size="small" bordered pagination={false} rowSelection={false}
-            columns={cols} dataKey="id"
+            columns={cols} rowKey="id"
             dataSource={rulesList} />
     }
 

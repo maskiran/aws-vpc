@@ -17,9 +17,12 @@ export default class RouteTableList extends React.Component {
         />
     }
 
-    getRouteTablesList = () => {
+    getRouteTablesList = (search) => {
         return axios.get('/api/route-tables', {
-            params: { vpc_id: this.props.vpc_id }
+            params: {
+                vpc_id: this.props.vpc_id,
+                search: search
+            }
         })
     }
 
@@ -61,7 +64,7 @@ export default class RouteTableList extends React.Component {
             </Descriptions>
             <Typography.Title level={5}>Routes</Typography.Title>
             <Table size="small" bordered pagination={false} rowSelection={false}
-                columns={routeCols} dataKey="destination"
+                columns={routeCols} rowKey="destination"
                 dataSource={details.routes} />
         </Space>
 
