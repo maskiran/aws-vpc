@@ -9,14 +9,6 @@ db_url = os.getenv('MONGODB_HOST', 'mongodb://localhost/aws')
 connect(host=db_url, connect=False)
 
 
-def make_search_string(exclude_keys=None, **kwargs):
-    if exclude_keys is None:
-        exclude_keys = []
-    valid_keys = set(kwargs.keys()) - set(exclude_keys)
-    values = [str(kwargs[val]) for val in valid_keys]
-    return " ".join(values)
-
-
 def create_item(model_cls_name, item):
     """
     add item dict to the db
