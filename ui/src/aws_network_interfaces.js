@@ -1,19 +1,19 @@
 import React from 'react'
-import { Table } from 'antd'
+import { Table, Tooltip, Typography } from 'antd'
 
 export default class AWSNetworkInterfaces extends React.Component {
     cols = [
         {
             title: 'Subnet',
-            dataIndex: 'subnet'
+            dataIndex: 'subnet',
+            render: (subnet) => {
+                var subnet_id = <Typography.Text copyable>{subnet.resource_id}</Typography.Text>
+                return <Tooltip title={subnet_id} color="white">{subnet.name}</Tooltip>
+            }
         },
         {
             title: 'IP',
             dataIndex: 'private_ip'
-        },
-        {
-            title: 'Mac',
-            dataIndex: 'mac'
         },
         {
             title: 'Src/Dst Check',
@@ -39,7 +39,7 @@ export default class AWSNetworkInterfaces extends React.Component {
 
     render() {
         return <Table size="small" bordered pagination={false} rowSelection={false}
-            columns={this.cols} dataKey="private_ip"
+            columns={this.cols} rowKey="mac"
             dataSource={this.props.interfaces} />
     }
 }
