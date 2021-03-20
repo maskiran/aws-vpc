@@ -12,16 +12,12 @@ class BaseDocument(DynamicDocument):
     resource_id = StringField()
     # enable text search on 'search' field
     meta = {
+        'auto_create_index': False,
         'indexes': [
-            "$search",
             'region',
             'account_id',
             'tags',
-            'name',
-            {
-                'fields': ['account_id', 'region', 'resource_id'],
-                'unique': True
-            }
+            'name'
         ],
         'abstract': True
     }
