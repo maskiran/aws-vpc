@@ -1,6 +1,5 @@
 import React from 'react';
 import { Layout } from 'antd';
-import axios from 'axios';
 import ItemsList from 'react-antd-itemslist';
 import { Link } from 'react-router-dom';
 
@@ -17,7 +16,7 @@ export default class VpcsList extends React.Component {
                     tableTitle="VPCs"
                     itemsListUrl="/api/vpcs"
                     columns={this.getTableColumns()}
-                    pagination={false}
+                    pagination
                     rowActions={['deleteItem']}
                     history={this.props.history}
                 />
@@ -36,7 +35,11 @@ export default class VpcsList extends React.Component {
             },
             {
                 title: 'Id',
-                dataIndex: 'id'
+                dataIndex: 'resource_id'
+            },
+            {
+                title: 'Region',
+                dataIndex: 'region'
             },
             {
                 title: 'CIDR',

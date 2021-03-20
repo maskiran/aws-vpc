@@ -1,5 +1,5 @@
 import boto3
-from flask import request
+
 
 def get_credentials():
     role_arn = 'arn:aws:iam::902505820678:role/mainaccount'
@@ -14,13 +14,9 @@ def get_credentials():
     }
 
 
-def get_boto3_resource(resource_name, kind='resource'):
-    region = request.args.get('region', 'us-east-1')
+def get_boto3_resource(resource_name, region='us-east-1'):
     creds = get_credentials()
-    if kind == 'client':
-        obj = boto3.client(resource_name, **creds, region_name=region)
-    else:
-        obj = boto3.resource(resource_name, **creds, region_name=region)
+    obj = boto3.client(resource_name, **creds, region_name=region)
     return obj
 
 
@@ -37,9 +33,17 @@ def tags_list_to_dict(tags_list):
     # converts a list of tags to a dict with key as 'tag:<key>'
     data = {}
     for tag in tags_list:
-        key = 'tag:' + tag['Key']
+        key = 'tag_' + \
+            tag['Key'].replace(':', '_').replace('/', '_').replace('.', '_')
         data[key] = tag['Value']
     return data
+
+
+def normalize_tags_list(tags_list):
+    """
+    tags_list is a list of dicts with Key and Value attributes. convert the field names to lower case
+    """
+    return [{'key': tag['Key'], 'value': tag['Value']} for tag in tags_list]
 
 
 def add_tags_as_keys(data, tags_list):
