@@ -1,3 +1,4 @@
+import copy
 import datetime
 from aws_utils import get_boto3_resource, add_tags_as_keys, get_name_tag, normalize_tags_list
 import db
