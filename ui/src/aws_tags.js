@@ -17,7 +17,7 @@ export default class AWSTags extends React.Component {
     render() {
         return <Table size="small" bordered pagination={false} rowSelection={false}
             rowClassName="aws-tags"
-            columns={this.cols} dataKey="key"
+            columns={this.cols} rowKey="key"
             dataSource={this.props.tags} />
     }
 }
