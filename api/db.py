@@ -45,8 +45,10 @@ def get_items(model_cls_name, json_output=True, page_size=25, page=1, sort='name
     page: page number
     json: True/False, return either json dict or raw mongoengine document instances
     """
+    search = ''
     if 'search' in kwargs:
         search = kwargs.pop('search')
+    if search:
         rsp = model_cls_name.objects(**kwargs).search_text(search)
     else:
         rsp = model_cls_name.objects(**kwargs)
