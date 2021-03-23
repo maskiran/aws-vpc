@@ -4,26 +4,20 @@ import axios from 'axios';
 import { Descriptions, Space, Table, Typography } from 'antd';
 
 export default class RouteTableList extends React.Component {
+    itemsListUrl = "/api/route-tables"
+
     render() {
         return <ItemsList
             tableTitle="Route Tables"
-            itemsListMethod={this.getRouteTablesList}
+            itemsListUrl={this.itemsListUrl}
+            itemBaseUrl={this.itemsListUrl}
             columns={this.getTableColumns()}
+            dataKey="resource_id"
             pagination={false}
             rowActions={['deleteItem']}
-            itemGetMethod={this.getSelectedItem}
             itemViewer={this.renderSelectedItem}
             history={this.props.history}
         />
-    }
-
-    getRouteTablesList = (search) => {
-        return axios.get('/api/route-tables', {
-            params: {
-                vpc_id: this.props.vpc_id,
-                search: search
-            }
-        })
     }
 
     getTableColumns = () => {
@@ -38,10 +32,6 @@ export default class RouteTableList extends React.Component {
                 dataIndex: 'resource_id'
             },
         ]
-    }
-
-    getSelectedItem = (record) => {
-        return axios.get('/api/route-tables/' + record.resource_id)
     }
 
     renderSelectedItem = (details) => {
@@ -67,7 +57,5 @@ export default class RouteTableList extends React.Component {
                 columns={routeCols} rowKey="destination"
                 dataSource={details.routes} />
         </Space>
-
     }
-
 }

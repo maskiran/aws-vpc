@@ -4,26 +4,20 @@ import axios from 'axios';
 import { Descriptions, Space, Table, Tabs, Typography } from 'antd';
 
 export default class SecurityGroupList extends React.Component {
+    itemsListUrl = "/api/security-groups"
+    
     render() {
         return <ItemsList
             tableTitle="Security Groups"
-            itemsListMethod={this.getRouteTablesList}
+            itemsListUrl={this.itemsListUrl}
+            itemBaseUrl={this.itemsListUrl}
+            dataKey="resource_id"
             columns={this.getTableColumns()}
             pagination={false}
             rowActions={['deleteItem']}
-            itemGetMethod={this.getSelectedItem}
             itemViewer={this.renderSelectedItem}
             history={this.props.history}
         />
-    }
-
-    getRouteTablesList = (search) => {
-        return axios.get('/api/security-groups', {
-            params: {
-                vpc_id: this.props.vpc_id,
-                search: search
-            }
-        })
     }
 
     getTableColumns = () => {
@@ -38,10 +32,6 @@ export default class SecurityGroupList extends React.Component {
                 dataIndex: 'resource_id'
             },
         ]
-    }
-
-    getSelectedItem = (record) => {
-        return axios.get('/api/security-groups/' + record.resource_id)
     }
 
     renderSelectedItem = (details) => {
@@ -102,5 +92,4 @@ export default class SecurityGroupList extends React.Component {
             columns={cols} rowKey="id"
             dataSource={rulesList} />
     }
-
 }

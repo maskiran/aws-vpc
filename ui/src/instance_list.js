@@ -7,27 +7,21 @@ import AWSTags from './aws_tags';
 import AWSNetworkInterfaces from './aws_network_interfaces';
 
 export default class InstanceList extends React.Component {
+    itemsListUrl = "/api/instances"
+
     render() {
         return <ItemsList
             tableTitle="Instances"
-            itemsListMethod={this.getInstancesList}
+            itemsListUrl={this.itemsListUrl}
+            itemBaseUrl={this.itemsListUrl}
+            dataKey="resource_id"
             itemViewerWidth="60%"
             columns={this.getTableColumns()}
             pagination={false}
             rowActions={['deleteItem']}
-            itemGetMethod={this.getSelectedItem}
             itemViewer={this.renderSelectedItem}
             history={this.props.history}
         />
-    }
-
-    getInstancesList = (search) => {
-        return axios.get('/api/instances', {
-            params: {
-                vpc_id: this.props.vpc_id,
-                search: search
-            }
-        })
     }
 
     getTableColumns = () => {
@@ -64,9 +58,9 @@ export default class InstanceList extends React.Component {
                 title: 'IP Address',
                 dataIndex: 'network_interfaces',
                 render: (intfList) => {
-                    return intfList.map(intf => {
-                        return intf.private_ip
-                    }).join(", ")
+                    return intfList.map((intf, idx) => {
+                        return <div key={idx}>{intf.private_ip + ' / ' + intf.public_ip}</div>
+                    })
                 }
             },
             {
@@ -83,10 +77,6 @@ export default class InstanceList extends React.Component {
                 hide: true,
             },
         ]
-    }
-
-    getSelectedItem = (record) => {
-        return axios.get('/api/instances/' + record.resource_id)
     }
 
     renderSelectedItem = (details) => {

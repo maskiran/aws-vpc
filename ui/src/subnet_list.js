@@ -4,12 +4,16 @@ import axios from 'axios';
 import { Descriptions, Space, Table, Typography } from 'antd';
 
 export default class SubnetList extends React.Component {
+    itemsListUrl = "/api/subnets"
+
     render() {
         return <ItemsList
             tableTitle="Subnets"
-            itemsListMethod={this.getSubnetsList}
+            itemsListUrl={this.itemsListUrl}
+            itemBaseUrl={this.itemsListUrl}
             columns={this.getTableColumns()}
             pagination={false}
+            dataKey="resource_id"
             rowActions={['deleteItem']}
             itemGetMethod={this.getSelectedItem}
             itemViewer={this.renderSelectedItem}
@@ -46,10 +50,6 @@ export default class SubnetList extends React.Component {
                 dataIndex: 'az'
             }
         ]
-    }
-
-    getSelectedItem = (record) => {
-        return axios.get('/api/subnets/' + record.resource_id)
     }
 
     renderSelectedItem = (details) => {

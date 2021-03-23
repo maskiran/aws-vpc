@@ -1,27 +1,21 @@
 import React from 'react';
-import { Layout } from 'antd';
 import ItemsList from 'react-antd-itemslist';
 import { Link } from 'react-router-dom';
 
-export default class VpcsList extends React.Component {
+export default class VpcList extends React.Component {
     state = {
         vpcsList: []
     }
 
     render() {
-        return <Layout>
-            {/* <Layout.Sider theme="light"></Layout.Sider> */}
-            <Layout.Content style={{padding: "20px"}}>
-                <ItemsList
-                    tableTitle="VPCs"
-                    itemsListUrl="/api/vpcs"
-                    columns={this.getTableColumns()}
-                    pagination
-                    rowActions={['deleteItem']}
-                    history={this.props.history}
-                />
-            </Layout.Content>
-        </Layout>
+        return <ItemsList
+            tableTitle="VPCs"
+            itemsListUrl="/api/vpcs"
+            columns={this.getTableColumns()}
+            pagination
+            rowActions={['deleteItem']}
+            history={this.props.history}
+        />
     }
 
     getTableColumns = () => {
@@ -30,7 +24,7 @@ export default class VpcsList extends React.Component {
                 title: 'Name',
                 dataIndex: 'name',
                 render: (name, record) => {
-                    return <Link to={"/vpcs/" + record.resource_id}>{name}</Link> 
+                    return <Link to={"/vpcs/" + record.resource_id}>{name}</Link>
                 }
             },
             {
