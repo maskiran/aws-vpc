@@ -49,11 +49,11 @@ def get_items(model_cls_name, json_output=True, page_size=25, page=1, sort='name
     if 'search' in kwargs:
         search = kwargs.pop('search')
     if search:
-        rsp = model_cls_name.objects(**kwargs).search_text(search)
+        rsp = model_cls_name.objects(**kwargs).search_text(search).order_by('$text_score')
     else:
         rsp = model_cls_name.objects(**kwargs)
-    if sort:
-        rsp = rsp.order_by(sort)
+        if sort:
+            rsp = rsp.order_by(sort)
     count = rsp.count()
     if page_size:
         page_size = int(page_size)
