@@ -41,9 +41,10 @@ def get_network_interfaces(rsp_interfaces_list):
     for intf in rsp_interfaces_list:
         subnet_details = db.get_item(models.Subnet, resource_id=intf['SubnetId'])
         interfaces.append({
+            'resource_id': intf['NetworkInterfaceId'],
             'mac': intf['MacAddress'],
             'private_ip': intf['PrivateIpAddress'],
-            'subnet': intf['SubnetId'],
+            'public_ip': intf.get('Association', {}).get('PublicIp', ''),
             'subnet': {
                 'resource_id': intf['SubnetId'],
                 'name': subnet_details['name']
