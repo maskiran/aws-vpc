@@ -20,7 +20,7 @@ def sync_instances(region='us-east-1'):
                     'region': region,
                     'account_id': reservation['OwnerId'],
                     'resource_id': item['InstanceId'],
-                    'name': get_name_tag(item['Tags'], item['InstanceId']),
+                    'name': get_name_tag(item['Tags']),
                     'tags': normalize_tags_list(item['Tags']),
                     'instance_type': item['InstanceType'],
                     'launch_time': item['LaunchTime'],
