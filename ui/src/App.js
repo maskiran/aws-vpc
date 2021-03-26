@@ -15,10 +15,10 @@ export default class App extends React.Component {
                     <Route path="/" component={PageHeader} />
                 </Layout.Header>
                 <Layout>
-                    <Layout.Sider collapsible width="200" theme="light">
+                    <Layout.Sider collapsible width="250" theme="light" style={{boxShadow: "0px 0px 10px 0px #777777"}}>
                         <Route path="/" component={AppSidebar} />
                     </Layout.Sider>
-                    <Layout.Content style={{ padding: "20px" }}>
+                    <Layout.Content style={{ padding: "20px 20px", backgroundColor2: "red" }}>
                         {Routes}
                     </Layout.Content>
                 </Layout>
