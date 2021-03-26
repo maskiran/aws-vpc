@@ -8,6 +8,7 @@ import apiresources.instance
 import apiresources.route_table
 import apiresources.security_group
 import apiresources.subnet
+import apiresources.load_balancer
 
 app = Flask(__name__)
 
@@ -35,6 +36,7 @@ app.register_blueprint(apiresources.subnet.app, url_prefix='/subnets')
 app.register_blueprint(apiresources.route_table.app, url_prefix='/route-tables')
 app.register_blueprint(apiresources.security_group.app, url_prefix='/security-groups')
 app.register_blueprint(apiresources.instance.app, url_prefix='/instances')
+app.register_blueprint(apiresources.load_balancer.app, url_prefix='/load-balancers')
 
 
 if __name__ == "__main__":

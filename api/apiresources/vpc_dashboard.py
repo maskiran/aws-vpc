@@ -17,4 +17,5 @@ def vpc_dashboard(vpc_id=None):
         'security_groups': models.SecurityGroup.objects(**query).count(),
         'route_tables': models.RouteTable.objects(**query).count(),
         'instances': models.Instance.objects(**query).count(),
+        'load_balancers': models.LoadBalancer.objects(**query).count(),
     }
