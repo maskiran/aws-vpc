@@ -1,6 +1,6 @@
 import React from 'react'
 import { Table } from 'antd'
-import './aws_tags.css'
+import { Copy } from './utils'
 
 export default class AWSTags extends React.Component {
     cols = [
@@ -10,7 +10,10 @@ export default class AWSTags extends React.Component {
         },
         {
             title: 'Value',
-            dataIndex: 'value'
+            dataIndex: 'value',
+            render: (text) => {
+                return <Copy text={text} />
+            }
         }
     ]
 
