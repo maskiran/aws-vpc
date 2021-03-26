@@ -17,6 +17,7 @@ def sync_vpcs(region='us-east-1'):
                 'region': region,
                 'account_id': item['OwnerId'],
                 'resource_id': item['VpcId'],
+                'vpc_id': item['VpcId'],
                 'name': get_name_tag(item['Tags'], item['VpcId']),
                 'tags': normalize_tags_list(item['Tags']),
                 'cidr': [x['CidrBlock'] for x in item['CidrBlockAssociationSet']],
