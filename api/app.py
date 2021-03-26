@@ -2,6 +2,7 @@ import inspect
 from flask import Flask, request
 from mongoengine import connect
 import models
+import apiresources.vpc_dashboard
 import apiresources.vpc
 import apiresources.instance
 import apiresources.route_table
@@ -24,9 +25,11 @@ def init_indices():
             col.create_index('resource_id', name='resource_id')
             col.create_index('tags', name='tags')
             col.create_index('name', name='name')
-    return 'done'
+            col.create_index('vpc_id', name='vpc_id')
+    return 'indexes created\n'
 
 
+app.register_blueprint(apiresources.vpc_dashboard.app, url_prefix='/vpcdashboard')
 app.register_blueprint(apiresources.vpc.app, url_prefix='/vpcs')
 app.register_blueprint(apiresources.subnet.app, url_prefix='/subnets')
 app.register_blueprint(apiresources.route_table.app, url_prefix='/route-tables')
