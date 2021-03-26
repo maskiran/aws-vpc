@@ -1,4 +1,5 @@
 import boto3
+from botocore.config import Config
 
 
 def get_credentials():
@@ -15,8 +16,14 @@ def get_credentials():
 
 
 def get_boto3_resource(resource_name, region='us-east-1'):
+    config = Config(
+        retries={
+            'max_attempts': 10,
+            'mode': 'standard'
+        }
+    )
     creds = get_credentials()
-    obj = boto3.client(resource_name, **creds, region_name=region)
+    obj = boto3.client(resource_name, region_name=region, config=config, **creds)
     return obj
 
 
@@ -26,6 +33,9 @@ def get_name_tag(tags_list, default_value='noname'):
         if tag['Key'] == 'Name' or tag['Key'] == 'name':
             name_value = tag['Value']
             break
+    # tag could be empty string, in that case return default_value
+    if not name_value:
+        name_value = default_value
     return name_value
 
 
