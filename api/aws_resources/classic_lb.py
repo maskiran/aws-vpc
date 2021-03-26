@@ -20,6 +20,7 @@ def sync_clbs(region='us-east-1'):
                 'name': item['LoadBalancerName'],
                 'type': 'classic',
                 'scheme': item['Scheme'],
+                'created_time': item['CreatedTime'],
                 'subnets': [{
                     'resource_id': subnet,
                     'name': db.get_item(models.Subnet, resource_id=subnet)['name']

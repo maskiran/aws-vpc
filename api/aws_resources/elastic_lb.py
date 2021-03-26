@@ -24,6 +24,7 @@ def sync_elbs(region='us-east-1'):
                 'scheme': item.get('Scheme', ''),
                 'dns': item.get('DNSName', ''),
                 'arn': item['LoadBalancerArn'],
+                'created_time': item['CreatedTime'],
                 'subnets': [{
                     'resource_id': az['SubnetId'],
                     'name': db.get_item(models.Subnet, resource_id=az['SubnetId'])['name']
