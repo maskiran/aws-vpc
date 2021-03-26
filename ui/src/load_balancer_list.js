@@ -3,7 +3,6 @@ import _ from 'lodash'
 import ItemsList from 'react-antd-itemslist'
 import { Tooltip } from 'antd'
 import { vpcFilter } from './utils'
-import { InfoCircleOutlined } from '@ant-design/icons'
 
 export default class LoadBalancerList extends React.Component {
     itemsListUrl = "/api/load-balancers" + vpcFilter(this.props.location.search)
@@ -68,11 +67,9 @@ export default class LoadBalancerList extends React.Component {
                 render: (listeners, record) => {
                     if (listeners.length > 2) {
                         var displayText = listeners.slice(0, 2).map((item, idx) => {
-                            return <div key={item.port}>
-                                {item.port}/{item.protocol}
-                                {idx == 1 && <InfoCircleOutlined style={{marginLeft: "5px"}} />}
-                            </div>
+                            return <div key={item.port}>{item.port}/{item.protocol}</div>
                         })
+                        displayText.push(<div>{listeners.length - 2} more..</div>)
                         var allText = listeners.map(item => <div key={item.port}>{item.port}/{item.protocol}</div>)
                         return <Tooltip title={allText}>{displayText}</Tooltip>
                     } else {
