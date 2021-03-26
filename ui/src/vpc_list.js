@@ -1,19 +1,25 @@
-import React from 'react';
-import ItemsList from 'react-antd-itemslist';
-import { Link } from 'react-router-dom';
+import React from 'react'
+import ItemsList from 'react-antd-itemslist'
+import { Link } from 'react-router-dom'
 
 export default class VpcList extends React.Component {
-    state = {
-        vpcsList: []
-    }
+    itemsListUrl = "/api/vpcs"
 
     render() {
         return <ItemsList
             tableTitle="VPCs"
-            itemsListUrl="/api/vpcs"
+            itemsListUrl={this.itemsListUrl}
+            itemBaseUrl={this.itemsListUrl}
+            indexColViewLink={true}
             columns={this.getTableColumns()}
             pagination
-            rowActions={['deleteItem']}
+            dataKey="resource_id"
+            rowActions={[]}
+            rowSelection={false}
+            addButtonTitle={false}
+            deleteButtonTitle={false}
+            // itemViewer={this.renderSelectedItem}
+            itemViewerEditLink={false}
             history={this.props.history}
         />
     }
@@ -24,12 +30,16 @@ export default class VpcList extends React.Component {
                 title: 'Name',
                 dataIndex: 'name',
                 render: (name, record) => {
-                    return <Link to={"/vpcs/" + record.resource_id}>{name}</Link>
+                    return <Link to={"/vpcdashboard?vpc_id=" + record.resource_id}>{name}</Link>
                 }
             },
             {
                 title: 'Id',
                 dataIndex: 'resource_id'
+            },
+            {
+                title: 'Account',
+                dataIndex: 'account_id'
             },
             {
                 title: 'Region',
