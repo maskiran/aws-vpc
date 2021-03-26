@@ -24,6 +24,7 @@ def sync_route_tables(region="us-east-1"):
                 'routes': get_routes(item['Routes']),
                 'main': is_main_rtable(item)
             }
+            info['vpc_name'] = db.get_item(models.Vpc, vpc_id=item['VpcId'])['name']
             add_tags_as_keys(info, item['Tags'])
             page_items.append(info)
         db.replace_items(models.RouteTable, page_items)
