@@ -1,19 +1,40 @@
 import React from 'react'
 import { Table, Tooltip, Typography } from 'antd'
+import { Copy } from './utils'
 
 export default class AWSNetworkInterfaces extends React.Component {
     cols = [
         {
-            title: 'Subnet',
-            dataIndex: 'subnet',
-            render: (subnet) => {
-                var subnet_id = <Typography.Text copyable>{subnet.resource_id}</Typography.Text>
-                return <Tooltip title={subnet_id} color="white">{subnet.name}</Tooltip>
+            title: 'Id',
+            dataIndex: 'resource_id',
+            render: (text) => {
+                return <Copy text={text} />
             }
         },
         {
-            title: 'IP',
-            dataIndex: 'private_ip'
+            title: 'Subnet',
+            dataIndex: 'subnet',
+            render: (subnet) => {
+                return <Copy text={subnet.name} tooltip={subnet.resource_id} />
+            }
+        },
+        {
+            title: 'Private IP',
+            dataIndex: 'private_ip',
+            render: (text) => {
+                return <Copy text={text} />
+            }
+        },
+        {
+            title: 'Public IP',
+            dataIndex: 'public_ip',
+            render: (text) => {
+                if (text) {
+                    return <Copy text={text} />
+                } else {
+                    return ""
+                }
+            }
         },
         {
             title: 'Src/Dst Check',
@@ -31,8 +52,8 @@ export default class AWSNetworkInterfaces extends React.Component {
             dataIndex: 'security_groups',
             render: (sgList) => {
                 return sgList.map(sg => {
-                    return sg.name
-                }).join(", ")
+                    return <Copy text={sg.name} tooltip={sg.resource_id} key={sg.name} />
+                })
             }
         },
     ]
