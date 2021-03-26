@@ -24,6 +24,7 @@ def sync_subnets(region='us-east-1'):
                 'az': item['AvailabilityZone'],
                 'arn': item['SubnetArn'],
             }
+            info['vpc_name'] = db.get_item(models.Vpc, vpc_id=item['VpcId'])['name']
             add_tags_as_keys(info, item['Tags'])
             page_items.append(info)
         db.replace_items(models.Subnet, page_items)
