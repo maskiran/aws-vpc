@@ -57,3 +57,7 @@ class RouteTable(BaseDocument):
 
 class Instance(BaseDocument):
     pass
+
+
+class LoadBalancer(BaseDocument):
+    pass
