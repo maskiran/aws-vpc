@@ -18,6 +18,8 @@ def create_item(model_cls_name, item):
 
 
 def create_items(model_cls_name, items_list):
+    if len(items_list) == 0:
+        return
     objs = []
     for item in items_list:
         objs.append(model_cls_name(**item))
@@ -25,6 +27,8 @@ def create_items(model_cls_name, items_list):
 
 
 def replace_items(model_cls_name, items_list):
+    if len(items_list) == 0:
+        return
     objs = []
     for item in items_list:
         op = ReplaceOne(
@@ -51,7 +55,7 @@ def get_items(model_cls_name, json_output=True, page_size=25, page=1, sort='name
     if search:
         rsp = model_cls_name.objects(**kwargs).search_text(search).order_by('$text_score')
     else:
-        rsp = model_cls_name.objects(**kwargs)
+        rsp = model_cls_name.objects(**kwargs).collation({'locale': 'en', 'numericOrdering': True})
         if sort:
             rsp = rsp.order_by(sort)
     count = rsp.count()
