@@ -7,7 +7,7 @@ import RouteTableList from './route_table_list'
 import SecurityGroupList from './security_group_list'
 import InstanceList from './instance_list'
 import VpcDashboard from './vpc_dashboard'
-
+import LoadBalancerList from './load_balancer_list'
 
 const Routes = (
     <Switch>
@@ -21,6 +21,7 @@ const Routes = (
         <Route exact path="/route-tables" component={RouteTableList} />
         <Route exact path="/security-groups" component={SecurityGroupList} />
         <Route exact path="/instances" component={InstanceList} />
+        <Route exact path="/load-balancers" component={LoadBalancerList} />
     </Switch>
 )
 

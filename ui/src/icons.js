@@ -1,5 +1,6 @@
 import React from 'react'
-import { BorderlessTableOutlined } from '@ant-design/icons'
+import _ from 'lodash'
+import { BorderlessTableOutlined, TableOutlined } from '@ant-design/icons'
 import { FaNetworkWired } from 'react-icons/fa'
 import { MdSecurity } from 'react-icons/md'
 import { GrVirtualMachine } from 'react-icons/gr'
@@ -14,7 +15,7 @@ const iconMap = {
 }
 
 const getIcon = (text) => {
-    return iconMap[text]
+    return _.get(iconMap, text, <TableOutlined />)
 }
 
 export default getIcon

@@ -61,6 +61,9 @@ export default class AppSidebar extends React.Component {
                     <Menu.Item key='/instances' icon={getIcon('instances')}>
                         <Link to={'/instances' + vpcSearch}>Instances ({this.state.vpcStats.instances})</Link>
                     </Menu.Item>
+                    <Menu.Item key='/load-balancers' icon={getIcon('load-balancers')}>
+                        <Link to={'/load-balancers' + vpcSearch}>Load Balancers ({this.state.vpcStats.load_balancers})</Link>
+                    </Menu.Item>
                 </Menu.ItemGroup>
             </Menu>
         )
