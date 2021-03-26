@@ -1,21 +1,27 @@
 import React from 'react';
 import ItemsList from 'react-antd-itemslist';
-import axios from 'axios';
-import { Descriptions, Space, Table, Tabs, Typography } from 'antd';
+import { Descriptions, Space, Table, Tabs, Tooltip } from 'antd';
+import { vpcFilter, Copy } from './utils'
 
 export default class SecurityGroupList extends React.Component {
-    itemsListUrl = "/api/security-groups"
+    itemsListUrl = "/api/security-groups" + vpcFilter(this.props.location.search)
+    itemBaseUrl = "/api/security-groups"
     
     render() {
         return <ItemsList
             tableTitle="Security Groups"
             itemsListUrl={this.itemsListUrl}
-            itemBaseUrl={this.itemsListUrl}
-            dataKey="resource_id"
+            itemBaseUrl={this.itemBaseUrl}
+            indexColViewLink={true}
             columns={this.getTableColumns()}
-            pagination={false}
-            rowActions={['deleteItem']}
+            pagination
+            dataKey="resource_id"
+            rowActions={[]}
+            rowSelection={false}
+            addButtonTitle={false}
+            deleteButtonTitle={false}
             itemViewer={this.renderSelectedItem}
+            itemViewerEditLink={false}
             history={this.props.history}
         />
     }
@@ -31,14 +37,18 @@ export default class SecurityGroupList extends React.Component {
                 title: 'Id',
                 dataIndex: 'resource_id'
             },
+            {
+                title: 'VPC',
+                dataIndex: 'vpc_id'
+            },
         ]
     }
 
     renderSelectedItem = (details) => {
-        return <Space size="large" direction="vertical" style={{ width: "100%" }}>
+        return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
             <Descriptions bordered size="small" column={1}>
-                <Descriptions.Item label="Name">{details.name}</Descriptions.Item>
-                <Descriptions.Item label="Id">{details.id}</Descriptions.Item>
+                <Descriptions.Item label="Name"><Copy text={details.name}/></Descriptions.Item>
+                <Descriptions.Item label="Id"><Copy text={details.id}/></Descriptions.Item>
             </Descriptions>
             <Tabs>
                 <Tabs.TabPane tab="Inbound Rules" key="inbound">

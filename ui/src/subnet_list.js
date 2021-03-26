@@ -1,33 +1,29 @@
-import React from 'react';
-import ItemsList from 'react-antd-itemslist';
-import axios from 'axios';
-import { Descriptions, Space, Table, Typography } from 'antd';
+import React from 'react'
+import ItemsList from 'react-antd-itemslist'
+import { Descriptions, Space, Table, Tooltip, Typography } from 'antd'
+import { Copy, vpcFilter } from './utils'
 
 export default class SubnetList extends React.Component {
-    itemsListUrl = "/api/subnets"
+    itemsListUrl = "/api/subnets" + vpcFilter(this.props.location.search)
+    itemBaseUrl = "/api/subnets"
 
     render() {
         return <ItemsList
             tableTitle="Subnets"
             itemsListUrl={this.itemsListUrl}
-            itemBaseUrl={this.itemsListUrl}
+            itemBaseUrl={this.itemBaseUrl}
+            indexColViewLink={true}
             columns={this.getTableColumns()}
-            pagination={false}
+            pagination
             dataKey="resource_id"
-            rowActions={['deleteItem']}
-            itemGetMethod={this.getSelectedItem}
+            rowActions={[]}
+            rowSelection={false}
+            addButtonTitle={false}
+            deleteButtonTitle={false}
             itemViewer={this.renderSelectedItem}
+            itemViewerEditLink={false}
             history={this.props.history}
         />
-    }
-
-    getSubnetsList = (search) => {
-        return axios.get('/api/subnets', {
-            params: {
-                vpc_id: this.props.vpc_id,
-                search: search
-            }
-        })
     }
 
     getTableColumns = () => {
@@ -39,7 +35,16 @@ export default class SubnetList extends React.Component {
             },
             {
                 title: 'Id',
-                dataIndex: 'resource_id'
+                dataIndex: 'resource_id',
+            },
+            {
+                title: 'VPC ID',
+                dataIndex: 'vpc_id',
+            },
+            {
+                title: 'VPC Name',
+                dataIndex: 'vpc_name',
+                hide: true,
             },
             {
                 title: 'CIDR',
@@ -63,15 +68,18 @@ export default class SubnetList extends React.Component {
                 dataIndex: 'next_hop',
             }
         ]
-        return <Space size="large" direction="vertical" style={{ width: "100%" }}>
+        return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
+            <Typography.Title level={5}>Subnet Details</Typography.Title>
             <Descriptions bordered size="small" column={1}>
-                <Descriptions.Item label="Name">{details.name}</Descriptions.Item>
-                <Descriptions.Item label="Id">{details.resource_id}</Descriptions.Item>
-                <Descriptions.Item label="Region / AZ">{details.region} / {details.az}</Descriptions.Item>
-                <Descriptions.Item label="Account">{details.account_id}</Descriptions.Item>
-                <Descriptions.Item label="CIDR">{details.cidr}</Descriptions.Item>
+                <Descriptions.Item label="Name"><Copy text={details.name} /></Descriptions.Item>
+                <Descriptions.Item label="Id"><Copy text={details.resource_id} /></Descriptions.Item>
+                <Descriptions.Item label="Region / AZ">
+                    <Copy text={details.region} /> / <Copy text={details.az} />
+                </Descriptions.Item>
+                <Descriptions.Item label="Account"><Copy text={details.account_id} /></Descriptions.Item>
+                <Descriptions.Item label="CIDR"><Copy text={details.cidr} /></Descriptions.Item>
                 <Descriptions.Item label="Route Table">
-                    {details['route_table']['name']} / {details['route_table']['resource_id']}
+                    <Copy text={details['route_table']['name']} /> / <Copy text={details['route_table']['resource_id']} />
                 </Descriptions.Item>
             </Descriptions>
             <Typography.Title level={5}>Routes</Typography.Title>
