@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Descriptions, Typography } from 'antd'
+import { Descriptions, Space, Typography } from 'antd'
 import _ from 'lodash'
 
 /*
@@ -18,20 +18,18 @@ Example:
     {label: 'Label3', value: 'Value2'},
 ]}
 />
+
+<ObjectTable data={[
+    {label: 'Label1', value: ['Value1', 'Value2]},
+    {label: 'Label3', value: 'Value2'},
+]}
+/>
 */
 
 /**
  * @augments {React.Component<Props, State>}
  */
 export default class ObjectTable extends React.Component {
-    /* props
-    data => list of objects with label and value
-    copyable => true/false, default to true
-
-    item in list of data
-    {'label': label name, 'value': value, copyable=true/false, default inherit from the component}
-    value can be a reactnode or text. If you provide reactnode copyable is ignored
-    */
     render() {
         // copyable comes from the component level and can be overwritten at the item level
         var defaultCopyable = _.defaultTo(this.props.copyable, true)
@@ -48,25 +46,31 @@ export default class ObjectTable extends React.Component {
             if (React.isValidElement(item.value)) {
                 descItem = item.value
             } else {
-                descItem = <Typography.Text copyable={copyable}>{item.value}</Typography.Text>
+                // if value is array, separate them out
+                if (Array.isArray(item.value)) {
+                    descItem = item.value.map((v, idx) => {
+                        return <Typography.Text copyable={copyable} key={idx}>{v}</Typography.Text>
+                    })
+                    descItem = <Space size="large">{descItem}</Space>
+                } else {
+                    descItem = <Typography.Text copyable={copyable}>{item.value}</Typography.Text>
+                }
             }
             return <Descriptions.Item label={item.label} key={item.label}>
                 {descItem}
             </Descriptions.Item>
         })
         return <Descriptions size="small" bordered column={1} className="object-table"
-            labelStyle={{ fontWeight: "bold", width: "1px", whiteSpace: "nowrap" }}
+            labelStyle={{ fontWeight: "bold" }}
             contentStyle={{ backgroundColor: "white" }}>
             {data}
         </Descriptions>
     }
 }
 
-
 ObjectTable.defaultProps = {
     copyable: true
 }
-
 
 ObjectTable.propTypes = {
     /** make the value copyable or not, defaults true. Can be overridden at data level */
