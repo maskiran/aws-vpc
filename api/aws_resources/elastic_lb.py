@@ -19,6 +19,7 @@ def sync_elbs(region='us-east-1'):
                 'region': region,
                 'resource_id': item['LoadBalancerName'],
                 'vpc_id': item['VpcId'],
+                'vpc_name': db.get_item(models.Vpc, vpc_id=item['VpcId'])['name'],
                 'name': item['LoadBalancerName'],
                 'type': item['Type'],
                 'scheme': item.get('Scheme', ''),
@@ -35,7 +36,7 @@ def sync_elbs(region='us-east-1'):
             page_items.append(info)
         get_lb_tags(client, page_items)
         db.replace_items(models.LoadBalancer, page_items)
-    db.delete_items(models.Vpc, date_added__ne=cur_date)
+    db.delete_items(models.LoadBalancer, type='network', date_added__ne=cur_date)
 
 
 def get_all_target_groups(client):
