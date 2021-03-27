@@ -17,6 +17,7 @@ def sync_clbs(region='us-east-1'):
                 # 'account_id': item['OwnerId'],
                 'resource_id': item['LoadBalancerName'],
                 'vpc_id': item['VPCId'],
+                'vpc_name': db.get_item(models.Vpc, vpc_id=item['VPCId'])['name'],
                 'name': item['LoadBalancerName'],
                 'type': 'classic',
                 'scheme': item['Scheme'],
@@ -36,7 +37,7 @@ def sync_clbs(region='us-east-1'):
             page_items.append(info)
         get_lb_tags(client, page_items)
         db.replace_items(models.LoadBalancer, page_items)
-    db.delete_items(models.Vpc, date_added__ne=cur_date)
+    db.delete_items(models.LoadBalancer, type='classic', date_added__ne=cur_date)
 
 
 def get_lb_tags(client, lb_items_list):
