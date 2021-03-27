@@ -38,10 +38,6 @@ export default class VpcList extends React.Component {
                 dataIndex: 'resource_id'
             },
             {
-                title: 'Account',
-                dataIndex: 'account_id'
-            },
-            {
                 title: 'Region',
                 dataIndex: 'region'
             },
