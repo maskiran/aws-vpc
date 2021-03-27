@@ -5,3 +5,5 @@ docker run -it --rm -d \
     --workdir /svc \
     --name aws-vpc-ui \
     node bash -c "npm install && npm start"
+
+docker network connect db aws-vpc-ui
