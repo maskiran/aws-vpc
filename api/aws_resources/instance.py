@@ -7,6 +7,7 @@ import models
 def sync_instances(region='us-east-1'):
     cur_date = datetime.datetime.utcnow()
     ec2 = get_boto3_resource('ec2', region)
+    iam = get_boto3_resource('iam')
     for page in ec2.get_paginator('describe_instances').paginate():
         page_items = []
         for reservation in page['Reservations']:
@@ -26,10 +27,14 @@ def sync_instances(region='us-east-1'):
                     'launch_time': item['LaunchTime'],
                     'key_name': item.get('KeyName', ''),
                     'vpc_id': item['VpcId'],
+                    'vpc_name': db.get_item(models.Vpc, vpc_id=item['VpcId'])['name'],
+                    'iam_instance_profile_arn': item.get('IamInstanceProfile', {}).get('Arn', ''),
+                    'iam_instance_profile_name': item.get('IamInstanceProfile', {}).get('Arn', '').split('/')[-1],
                     'network_interfaces': get_network_interfaces(item['NetworkInterfaces']),
                     'az': item['Placement']['AvailabilityZone'],
                     'state': item['State']['Name'],
                 }
+                set_iam_role(info, iam)
                 add_tags_as_keys(info, item['Tags'])
                 page_items.append(info)
         db.replace_items(models.Instance, page_items)
@@ -54,6 +59,20 @@ def get_network_interfaces(rsp_interfaces_list):
                                 for sg in intf['Groups']],
         })
     return interfaces
+
+
+def set_iam_role(instance_item, iam):
+    """
+    from instance profile arn, find the attached iam role
+    """
+    role_info = {}
+    if instance_item['iam_instance_profile_name']:
+        rsp = iam.get_instance_profile(InstanceProfileName=instance_item['iam_instance_profile_name'])
+        # import pprint; pprint.pprint(rsp)
+        if len(rsp['InstanceProfile']['Roles']) > 0:
+            role_info = rsp['InstanceProfile']['Roles'][0]
+    instance_item['iam_role_name'] = role_info.get('RoleName', '')
+    instance_item['iam_role_arn'] = role_info.get('Arn', '')
 
 
 if __name__ == "__main__":
