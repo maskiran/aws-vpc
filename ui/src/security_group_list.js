@@ -1,12 +1,15 @@
 import React from 'react';
 import ItemsList from 'react-antd-itemslist';
-import { Descriptions, Space, Table, Tabs, Tooltip } from 'antd';
-import { vpcFilter, Copy } from './utils'
+import { Space, Table, Tabs } from 'antd';
+import { vpcFilter } from './utils'
+import ObjectTable from './object_table';
+
 
 export default class SecurityGroupList extends React.Component {
+    filteredVpc = vpcFilter(this.props.location.search, false)
     itemsListUrl = "/api/security-groups" + vpcFilter(this.props.location.search)
     itemBaseUrl = "/api/security-groups"
-    
+
     render() {
         return <ItemsList
             tableTitle="Security Groups"
@@ -39,17 +42,23 @@ export default class SecurityGroupList extends React.Component {
             },
             {
                 title: 'VPC',
-                dataIndex: 'vpc_id'
+                dataIndex: 'vpc_id',
+                hide: this.filteredVpc ? true : false,
+            },
+            {
+                title: 'VPC Name',
+                dataIndex: 'vpc_name',
+                hide: this.filteredVpc ? true : false,
             },
         ]
     }
 
     renderSelectedItem = (details) => {
         return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
-            <Descriptions bordered size="small" column={1}>
-                <Descriptions.Item label="Name"><Copy text={details.name}/></Descriptions.Item>
-                <Descriptions.Item label="Id"><Copy text={details.id}/></Descriptions.Item>
-            </Descriptions>
+            <ObjectTable data={[
+                { label: 'Name', value: details.name },
+                { label: 'Id', value: details.id },
+            ]} />
             <Tabs>
                 <Tabs.TabPane tab="Inbound Rules" key="inbound">
                     {this.renderRules(details.ingress_rules)}

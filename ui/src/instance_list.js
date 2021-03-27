@@ -1,12 +1,14 @@
 import React from 'react'
 import _ from 'lodash'
 import ItemsList from 'react-antd-itemslist'
-import { Descriptions, Space, Tabs, Tooltip } from 'antd'
+import { Space, Tabs } from 'antd'
 import AWSTags from './aws_tags'
 import AWSNetworkInterfaces from './aws_network_interfaces'
 import { vpcFilter, Copy } from './utils'
+import ObjectTable from './object_table'
 
 export default class InstanceList extends React.Component {
+    filteredVpc = vpcFilter(this.props.location.search, false)
     itemsListUrl = "/api/instances" + vpcFilter(this.props.location.search)
     itemBaseUrl = "/api/instances"
 
@@ -47,7 +49,13 @@ export default class InstanceList extends React.Component {
             },
             {
                 title: 'VPC',
-                dataIndex: 'vpc_id'
+                dataIndex: 'vpc_id',
+                hide: this.filteredVpc ? true : false,
+            },
+            {
+                title: 'VPC Name',
+                dataIndex: 'vpc_name',
+                hide: this.filteredVpc ? true : false,
             },
             {
                 title: 'Launch Time',
@@ -83,31 +91,30 @@ export default class InstanceList extends React.Component {
                 hide: true,
             },
             {
-                title: 'Role',
-                dataIndex: 'role',
-                render: (text) => {
-                    return _.last(text.split('/'))
-                },
-                hide: true,
+                title: 'IAM Role',
+                dataIndex: 'iam_role_name',
             },
         ]
     }
 
     renderSelectedItem = (details) => {
         return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
-            <Descriptions bordered size="small" column={1}>
-                <Descriptions.Item label="Name / Id">
-                    <Copy text={details.name} /> / <Copy text={details.resource_id} /></Descriptions.Item>
-                <Descriptions.Item label="Region / AZ">
-                    <Copy text={details.region} /> / <Copy text={details.az} />
-                </Descriptions.Item>
-                <Descriptions.Item label="Account"><Copy text={details.account_id} /></Descriptions.Item>
-                <Descriptions.Item label="Instance Type"><Copy text={details.instance_type} /></Descriptions.Item>
-                <Descriptions.Item label="Key Name"><Copy text={details.key_name} /></Descriptions.Item>
-                <Descriptions.Item label="Launch Time / State">
-                    {details.launch_time.$date} / {details.state}
-                </Descriptions.Item>
-            </Descriptions>
+            <ObjectTable data={[
+                { label: 'Name / Id', value: [details.name, details.resource_id] },
+                { label: 'Region / AZ', value: [details.region, details.az] },
+                { label: 'Instance Type', value: details.instance_type },
+                { label: 'Key Name', value: details.key_name },
+                { label: 'Launch Time', value: details.launch_time.$date },
+                { label: 'State', value: details.state },
+                {
+                    label: 'Instance Profile / IAM Role',
+                    copyable: false,
+                    value: [
+                        <Copy text={details.iam_instance_profile_name} tooltip={details.iam_instance_profile_arn} />,
+                        <Copy text={details.iam_role_name} tooltip={details.iam_role_arn} />
+                    ]
+                },
+            ]} />
             <Tabs activeKey={this.state.activeTabKey} onChange={this.setActiveTabKey}>
                 <Tabs.TabPane tab="Network Interfaces" key="network">
                     <AWSNetworkInterfaces interfaces={details.network_interfaces} />

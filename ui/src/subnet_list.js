@@ -1,9 +1,11 @@
 import React from 'react'
 import ItemsList from 'react-antd-itemslist'
-import { Descriptions, Space, Table, Tooltip, Typography } from 'antd'
-import { Copy, vpcFilter } from './utils'
+import { Space, Table, Typography } from 'antd'
+import { vpcFilter } from './utils'
+import ObjectTable from './object_table'
 
 export default class SubnetList extends React.Component {
+    filteredVpc = vpcFilter(this.props.location.search, false)
     itemsListUrl = "/api/subnets" + vpcFilter(this.props.location.search)
     itemBaseUrl = "/api/subnets"
 
@@ -40,11 +42,12 @@ export default class SubnetList extends React.Component {
             {
                 title: 'VPC ID',
                 dataIndex: 'vpc_id',
+                hide: this.filteredVpc ? true : false,
             },
             {
                 title: 'VPC Name',
                 dataIndex: 'vpc_name',
-                hide: true,
+                hide: this.filteredVpc ? true : false,
             },
             {
                 title: 'CIDR',
@@ -69,19 +72,13 @@ export default class SubnetList extends React.Component {
             }
         ]
         return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
-            <Typography.Title level={5}>Subnet Details</Typography.Title>
-            <Descriptions bordered size="small" column={1}>
-                <Descriptions.Item label="Name"><Copy text={details.name} /></Descriptions.Item>
-                <Descriptions.Item label="Id"><Copy text={details.resource_id} /></Descriptions.Item>
-                <Descriptions.Item label="Region / AZ">
-                    <Copy text={details.region} /> / <Copy text={details.az} />
-                </Descriptions.Item>
-                <Descriptions.Item label="Account"><Copy text={details.account_id} /></Descriptions.Item>
-                <Descriptions.Item label="CIDR"><Copy text={details.cidr} /></Descriptions.Item>
-                <Descriptions.Item label="Route Table">
-                    <Copy text={details['route_table']['name']} /> / <Copy text={details['route_table']['resource_id']} />
-                </Descriptions.Item>
-            </Descriptions>
+            <ObjectTable data={[
+                { label: 'Name', value: details.name },
+                { label: 'Id', value: details.resource_id },
+                { label: 'Region / AZ', value: [details.region, details.az] },
+                { label: 'CIDR', value: details.cidr },
+                { label: 'Route Table', value: [details.route_table.name, details.route_table.resource_id] },
+            ]} />
             <Typography.Title level={5}>Routes</Typography.Title>
             <Table size="small" bordered pagination={false} rowSelection={false}
                 columns={routeCols} rowKey="destination"

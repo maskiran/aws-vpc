@@ -1,10 +1,11 @@
 import React from 'react'
 import ItemsList from 'react-antd-itemslist'
-import { Descriptions, Space, Table, Typography, Tooltip } from 'antd'
-import { vpcFilter, Copy } from './utils'
-
+import { Space, Table, Typography } from 'antd'
+import { vpcFilter } from './utils'
+import ObjectTable from './object_table'
 
 export default class RouteTableList extends React.Component {
+    filteredVpc = vpcFilter(this.props.location.search, false)
     itemsListUrl = "/api/route-tables" + vpcFilter(this.props.location.search)
     itemBaseUrl = "/api/route-tables"
 
@@ -40,7 +41,13 @@ export default class RouteTableList extends React.Component {
             },
             {
                 title: 'VPC',
-                dataIndex: 'vpc_id'
+                dataIndex: 'vpc_id',
+                hide: this.filteredVpc ? true : false,
+            },
+            {
+                title: 'VPC Name',
+                dataIndex: 'vpc_name',
+                hide: this.filteredVpc ? true : false,
             },
         ]
     }
@@ -57,13 +64,12 @@ export default class RouteTableList extends React.Component {
             }
         ]
         return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
-            <Descriptions bordered size="small" column={1}>
-                <Descriptions.Item label="Name"><Copy text={details.name} /></Descriptions.Item>
-                <Descriptions.Item label="Id"><Copy text={details.resource_id} /></Descriptions.Item>
-                <Descriptions.Item label="Region"><Copy text={details.region} /></Descriptions.Item>
-                <Descriptions.Item label="Account"><Copy text={details.account_id} /></Descriptions.Item>
-                <Descriptions.Item label="Subnets"><Copy text={details.subnets} /></Descriptions.Item>
-            </Descriptions>
+            <ObjectTable data={[
+                { label: 'Name', value: details.name },
+                { label: 'Id', value: details.resource_id },
+                { label: 'Region', value: details.region },
+                { label: 'Subnets', value: details.subnets },
+            ]} />
             <Typography.Title level={5}>Routes</Typography.Title>
             <Table size="small" bordered pagination={false} rowSelection={false}
                 columns={routeCols} rowKey="destination"
