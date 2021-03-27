@@ -1,48 +1,8 @@
 import React from 'react'
-import { Tooltip, Button, Typography } from 'antd'
-import { CopyToClipboard } from 'react-copy-to-clipboard'
-import { CopyOutlined, InfoCircleOutlined } from '@ant-design/icons'
-import { HiOutlineExternalLink } from 'react-icons/hi'
+import PropTypes from 'prop-types'
+import { Tooltip, Typography } from 'antd'
+import { InfoCircleOutlined } from '@ant-design/icons'
 import qs from 'query-string'
-
-export const trimField = (text, options) => {
-    if (!text) return null;
-    var { maxSize = 15, tooltipText = text, isTextString = true } = { ...options };
-    // isTextString: true/false. (default) true assumes text is a string
-    var cellText = text;
-    if (isTextString && (text.length > maxSize)) {
-        var lastIdx = text.length;
-        // show first 10 and last 6 chars
-        cellText = text.substring(0, 10) + '...' + text.substring(lastIdx - 6, lastIdx);
-    }
-    const tmpTooltip = <CopyToClipboard text={tooltipText}>
-        <span>{tooltipText} <Button type="link" icon={<CopyOutlined />} /></span>
-    </CopyToClipboard>
-    if (isTextString && (tooltipText !== text)) {
-        cellText = <span>{cellText} <InfoCircleOutlined /> </span>
-    }
-
-    return (
-        <Tooltip title={tmpTooltip}>
-            <span>{cellText}</span>
-        </Tooltip>
-    )
-}
-
-export const linkInNewTab = (url, displayName) => {
-    if (!displayName) {
-        displayName = url;
-    }
-    return <CopyToClipboard text={url}>
-        <span>
-            <a href={url} target="_blank" rel="noopener noreferrer">
-                {displayName}
-                <HiOutlineExternalLink className="react-icon-right" />
-            </a>
-            <Button type="link" icon={<CopyOutlined />} />
-        </span>
-    </CopyToClipboard >
-}
 
 export const getResponseErrorMessage = (axiosErr) => {
     var errMsg;
@@ -70,34 +30,78 @@ export const vpcFilter = (urlSearch, stringify = "vpc_id") => {
     }
 }
 
-export const Copy = (props) => {
-    /* 
-    props:
-    text => text to show and copy
-    tooltip => tooltip to show and copy
-    maincopy={false} => dont show copy for the main text
-    tooltipcopy={false} => dont show copy for the tooltip text
-    */
-    var mainCopyable = {
-        text: props.text,
-        tooltips: false
+/**
+ * @augments {Component<Props, State>}
+ */
+export class TrimField extends React.Component {
+    static propTypes = {
+        /** text to show in ellipsis if greater than maxSize */
+        text: PropTypes.string,
+        /** tooltip text, defaults to text */
+        tooltip: PropTypes.string,
+        /** maxSize, size of the string after which ellipsis are used */
+        maxSize: PropTypes.number
     }
-    if (props.maincopy === false) {
-        mainCopyable = false
+
+    static defaultProps = {
+        maxSize: 15
     }
-    var tooltipCopyable = {
-        text: props.tooltip,
-        tooltips: false
+
+    render() {
+        var cellText = this.props.text
+        if (cellText.length > this.props.maxSize) {
+            var lastIdx = cellText.length;
+            // show first 10 and last 6 chars
+            cellText = cellText.substring(0, 10) + '...' + cellText.substring(lastIdx - 6, lastIdx);
+        }
+        var tooltip = this.props.tooltip
+        if (!tooltip) {
+            tooltip = this.props.text
+        }
+        return <Copy text={cellText} tooltip={tooltip} maincopy={false} />
     }
-    if (props.tooltipcopy === false) {
-        tooltipCopyable = false
+}
+
+/**
+ * @augments {Component<Props, State>}
+ */
+export class Copy extends React.Component {
+    static propTypes = {
+        /** text to show in ellipsis if greater than maxSize */
+        text: PropTypes.string,
+        /** tooltip text, defaults to text */
+        tooltip: PropTypes.string,
+        /** true/false to make the text copyable or not, default true */
+        maincopy: PropTypes.bool,
+        /** true/false to make the tooltip copyable or not, default true */
+        tooltipcopy: PropTypes.bool
     }
-    if (props.tooltip) {
-        var title = <Typography.Text copyable={tooltipCopyable}>{props.tooltip}</Typography.Text>
-        return <Tooltip title={title} color="white">
-            <Typography.Text copyable={mainCopyable}>{props.text}</Typography.Text>
-        </Tooltip>
-    } else {
-        return <Typography.Text copyable={mainCopyable}>{props.text}</Typography.Text>
+
+    static defaultProps = {
+        maincopy: true,
+        tooltipcopy: true
+    }
+
+    render() {
+        var mainCopyable = {
+            tooltips: false
+        }
+        if (this.props.maincopy === false) {
+            mainCopyable = false
+        }
+        var tooltipCopyable = {
+            tooltips: false
+        }
+        if (this.props.tooltipcopy === false) {
+            tooltipCopyable = false
+        }
+        if (this.props.tooltip) {
+            var tooltip = <Typography.Text copyable={tooltipCopyable}>{this.props.tooltip}</Typography.Text>
+            return <Tooltip title={tooltip} color="white">
+                <Typography.Text copyable={mainCopyable}>{this.props.text}</Typography.Text>
+            </Tooltip>
+        } else {
+            return <Typography.Text copyable={mainCopyable}>{this.props.text}</Typography.Text>
+        }
     }
 }
