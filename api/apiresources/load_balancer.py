@@ -13,4 +13,6 @@ def lb_list():
 @app.route('/<resource_id>')
 def lb(resource_id):
     item = db.get_item(models.LoadBalancer, resource_id=resource_id)
+    for sg in item.get('security_groups', []):
+        sg['ingress_rules'] = db.get_item(models.SecurityGroup, resource_id=sg['resource_id'])['ingress_rules']
     return item
