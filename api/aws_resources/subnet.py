@@ -20,11 +20,11 @@ def sync_subnets(region='us-east-1'):
                 'name': get_name_tag(item['Tags'], item['SubnetId']),
                 'tags': normalize_tags_list(item['Tags']),
                 'vpc_id': item['VpcId'],
+                'vpc_name': db.get_item(models.Vpc, vpc_id=item['VpcId'])['name'],
                 'cidr': item['CidrBlock'],
                 'az': item['AvailabilityZone'],
                 'arn': item['SubnetArn'],
             }
-            info['vpc_name'] = db.get_item(models.Vpc, vpc_id=item['VpcId'])['name']
             add_tags_as_keys(info, item['Tags'])
             page_items.append(info)
         db.replace_items(models.Subnet, page_items)
@@ -54,3 +54,4 @@ def link_route_tables():
 
 if __name__ == "__main__":
     sync_subnets()
+    link_route_tables()

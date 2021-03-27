@@ -21,6 +21,7 @@ def sync_security_groups(region='us-east-1'):
                 'name': item['GroupName'],
                 'tags': normalize_tags_list(item['Tags']),
                 'vpc_id': item['VpcId'],
+                'vpc_name': db.get_item(models.Vpc, vpc_id=item['VpcId'])['name'],
                 'ingress_rules': get_rules(item['IpPermissions'], "source"),
                 'egress_rules': get_rules(item['IpPermissionsEgress'], "destination"),
             }

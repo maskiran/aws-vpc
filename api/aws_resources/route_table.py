@@ -20,11 +20,11 @@ def sync_route_tables(region="us-east-1"):
                 'name': get_name_tag(item['Tags'], item['RouteTableId']),
                 'tags': normalize_tags_list(item['Tags']),
                 'vpc_id': item['VpcId'],
+                'vpc_name': db.get_item(models.Vpc, vpc_id=item['VpcId'])['name'],
                 'subnets': [assoc['SubnetId'] for assoc in item['Associations'] if not assoc['Main']],
                 'routes': get_routes(item['Routes']),
                 'main': is_main_rtable(item)
             }
-            info['vpc_name'] = db.get_item(models.Vpc, vpc_id=item['VpcId'])['name']
             add_tags_as_keys(info, item['Tags'])
             page_items.append(info)
         db.replace_items(models.RouteTable, page_items)
