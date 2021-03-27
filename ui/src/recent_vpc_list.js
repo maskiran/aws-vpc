@@ -8,6 +8,7 @@ export default class RecentVpcList extends React.Component {
     render() {
         return <ItemsList
             tableTitle="Recent VPCs"
+            tableActions={false}
             itemsListMethod={this.getRecentVpcs}
             itemBaseUrl={this.itemsListUrl}
             indexColViewLink={true}
@@ -16,9 +17,6 @@ export default class RecentVpcList extends React.Component {
             dataKey="resource_id"
             rowActions={[]}
             rowSelection={false}
-            addButtonTitle={false}
-            deleteButtonTitle={false}
-            // itemViewer={this.renderSelectedItem}
             itemViewerEditLink={false}
             history={this.props.history}
         />
