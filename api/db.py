@@ -68,7 +68,7 @@ def get_items(model_cls_name, json_output=True, page_size=25, page=1, sort='name
     else:
         page_size = 0
         page = 1
-    if json == False:
+    if json_output == False:
         return rsp
     docs = json.loads(rsp.to_json())
     for doc in docs:
