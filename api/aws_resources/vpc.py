@@ -6,8 +6,8 @@ import models
 
 def sync_vpcs(region='us-east-1'):
     cur_date = datetime.datetime.utcnow()
-    ec2 = get_boto3_resource('ec2', region)
-    for page in ec2.get_paginator('describe_vpcs').paginate():
+    client = get_boto3_resource('ec2', region)
+    for page in client.get_paginator('describe_vpcs').paginate():
         page_items = []
         for item in page['Vpcs']:
             if 'Tags' not in item:
