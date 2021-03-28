@@ -1,14 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Tooltip, Typography } from 'antd'
-import { InfoCircleOutlined } from '@ant-design/icons'
 import qs from 'query-string'
 
 export const getResponseErrorMessage = (axiosErr) => {
     var errMsg;
     if (axiosErr.response) {
         var data = axiosErr.response.data;
-        errMsg = data.error || data.message || data.statusText
+        errMsg = data.error || data.message || data.statusText || data
     } else if (axiosErr.request) {
         errMsg = axiosErr.request
     } else {
