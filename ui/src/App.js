@@ -11,11 +11,12 @@ export default class App extends React.Component {
     render() {
         return <BrowserRouter>
             <Layout style={{ minHeight: "100vh" }}>
-                <Layout.Header>
+                <Layout.Header style={{ padding: "0px 20px" }}>
                     <Route path="/" component={PageHeader} />
                 </Layout.Header>
                 <Layout>
-                    <Layout.Sider collapsible width="250" theme="light" style={{boxShadow: "0px 0px 10px 0px #777777"}}>
+                    <Layout.Sider collapsible width="250" theme="light"
+                        style={{ boxShadow: "0px 0px 10px 0px #777777" }}>
                         <Route path="/" component={AppSidebar} />
                     </Layout.Sider>
                     <Layout.Content style={{ padding: "20px 20px", backgroundColor2: "red" }}>

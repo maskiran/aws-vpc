@@ -41,14 +41,25 @@ export default class LoadBalancerList extends React.Component {
                 viewItemLink: true,
             },
             {
+                title: 'Type',
+                dataIndex: 'type',
+                render: (text, record) => {
+                    return record.type + ' / ' + record.scheme
+                }
+            },
+            {
                 title: 'VPC',
                 dataIndex: 'vpc_id',
-                hide: this.filteredVpc ? true : false,
+                // hide: this.filteredVpc ? true : false,
+                hide: true,
             },
             {
                 title: 'VPC Name',
                 dataIndex: 'vpc_name',
                 hide: this.filteredVpc ? true : false,
+                render: (text, record) => {
+                    return <Copy text={text} tooltip={record.vpc_id} maincopy={false} />
+                }
             },
             {
                 title: 'Region',
@@ -59,13 +70,6 @@ export default class LoadBalancerList extends React.Component {
                 dataIndex: 'subnets',
                 render: (subnets) => {
                     return subnets.map(item => <div key={item.name}><TrimField text={item.name} /></div>)
-                }
-            },
-            {
-                title: 'Type',
-                dataIndex: 'type',
-                render: (text, record) => {
-                    return record.type + ' / ' + record.scheme
                 }
             },
             {
@@ -91,6 +95,7 @@ export default class LoadBalancerList extends React.Component {
         return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
             <ObjectTable data={[
                 { label: 'Name', value: details['name'] },
+                { label: 'ARN', value: details['arn'] },
                 { label: 'DNS', value: details['dns'] },
                 { label: 'VPC', value: [details['vpc_name'], details['vpc_id']] },
                 { label: 'Region', value: details['region'] },
@@ -236,7 +241,7 @@ export default class LoadBalancerList extends React.Component {
                         dataIndex: 'port',
                         render: (text, record) => {
                             var obj = {
-                                children: text,
+                                children: <Copy text={text} tooltip={record.target_group_arn}/>,
                                 props: {
                                     rowSpan: record.instance_count || 1
                                 }
