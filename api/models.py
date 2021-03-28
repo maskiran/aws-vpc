@@ -1,5 +1,22 @@
 import datetime
+import inspect
 from mongoengine import Document, DynamicDocument, StringField, IntField, DateTimeField, ListField, DictField, BooleanField, EmbeddedDocument, EmbeddedDocumentField, MapField
+
+
+def create_indexes():
+    # add indices for each of the models separately
+    cur_module = globals()
+    for m in cur_module:
+        if m == 'BaseDocument':
+            continue
+        mod_class = cur_module[m]
+        if inspect.isclass(mod_class) and issubclass(mod_class, BaseDocument):
+            col = mod_class._get_collection()
+            col.create_index([('$**', 'text')], name='search')
+            col.create_index('resource_id', name='resource_id')
+            col.create_index('tags', name='tags')
+            col.create_index('name', name='name')
+            col.create_index('vpc_id', name='vpc_id')
 
 
 class BaseDocument(DynamicDocument):
@@ -27,32 +44,16 @@ class Vpc(BaseDocument):
     pass
 
 
-class SubnetRouteTable(EmbeddedDocument):
-    '''
-    Route table that is associed with the subnet
-    '''
-    name = StringField(default="")
-    resource_id = StringField(default="")
-
-
 class Subnet(BaseDocument):
-    route_table = EmbeddedDocumentField(SubnetRouteTable)
+    pass
 
 
 class SecurityGroup(BaseDocument):
     pass
 
 
-class RouteTableSubnet(EmbeddedDocument):
-    '''
-    Subnets that are associated to the route table
-    '''
-    name = StringField(default="")
-    resource_id = StringField(default="")
-
-
 class RouteTable(BaseDocument):
-    subnet_details = ListField(EmbeddedDocumentField(RouteTableSubnet))
+    pass
 
 
 class Instance(BaseDocument):

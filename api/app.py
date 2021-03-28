@@ -9,27 +9,18 @@ import apiresources.route_table
 import apiresources.security_group
 import apiresources.subnet
 import apiresources.load_balancer
+import apiresources.crawl
 
 app = Flask(__name__)
 
 
 @app.route('/init')
 def init_indices():
-    # add indices for each of the models separately
-    for m in dir(models):
-        if m == 'BaseDocument':
-            continue
-        mod_class = getattr(models, m)
-        if inspect.isclass(mod_class) and issubclass(mod_class, models.BaseDocument):
-            col = mod_class._get_collection()
-            col.create_index([('$**', 'text')], name='search')
-            col.create_index('resource_id', name='resource_id')
-            col.create_index('tags', name='tags')
-            col.create_index('name', name='name')
-            col.create_index('vpc_id', name='vpc_id')
+    models.create_indexes()
     return 'indexes created\n'
 
 
+app.register_blueprint(apiresources.crawl.app, url_prefix='/crawl')
 app.register_blueprint(apiresources.vpc_dashboard.app, url_prefix='/vpcdashboard')
 app.register_blueprint(apiresources.vpc.app, url_prefix='/vpcs')
 app.register_blueprint(apiresources.subnet.app, url_prefix='/subnets')
