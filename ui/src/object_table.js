@@ -38,7 +38,6 @@ export default class ObjectTable extends React.Component {
             var copyable = _.defaultTo(item.copyable, defaultCopyable)
             if (copyable) {
                 copyable = {
-                    text: item.value,
                     tooltips: false
                 }
             }
