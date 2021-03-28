@@ -108,4 +108,4 @@ def get_item(model_cls_name, **kwargs):
 
 
 def delete_items(model_cls_name, **kwargs):
-    model_cls_name.objects(**kwargs).delete()
+    return model_cls_name.objects(**kwargs).delete()
