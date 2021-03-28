@@ -4,10 +4,14 @@ import db
 import models
 
 
-def sync_vpcs(region='us-east-1'):
+def sync(region='us-east-1', vpc_id=''):
     cur_date = datetime.datetime.utcnow()
     client = get_boto3_resource('ec2', region)
-    for page in client.get_paginator('describe_vpcs').paginate():
+    query = []
+    if vpc_id:
+        query = [{'Name': 'vpc-id', 'Values': [vpc_id]}]
+    added = 0
+    for page in client.get_paginator('describe_vpcs').paginate(Filters=query):
         page_items = []
         for item in page['Vpcs']:
             if 'Tags' not in item:
@@ -24,9 +28,17 @@ def sync_vpcs(region='us-east-1'):
             }
             add_tags_as_keys(info, item['Tags'])
             page_items.append(info)
+            added += 1
         db.replace_items(models.Vpc, page_items)
-    db.delete_items(models.Vpc, date_added__ne=cur_date)
+    del_query = {
+        'region': region,
+        'date_added__ne': cur_date,
+    }
+    if vpc_id:
+        del_query['vpc_id'] = vpc_id
+    deleted = db.delete_items(models.Vpc, **del_query)
+    return {'added': added, 'deleted': deleted}
 
 
 if __name__ == "__main__":
-    sync_vpcs()
+    sync()

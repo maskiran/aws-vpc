@@ -1,25 +1,34 @@
+import copy
 import datetime
 from aws_utils import get_boto3_resource, add_tags_as_keys, get_name_tag, normalize_tags_list
 import db
 import models
+import aws_resources.common
 
 
-def sync_elbs(region='us-east-1'):
+def sync(region='us-east-1', vpc_id=''):
     cur_date = datetime.datetime.utcnow()
     client = get_boto3_resource('elbv2', region)
-    target_groups = get_all_target_groups(client)
+    if not vpc_id:
+        target_groups = get_all_target_groups(client, vpc_id)
+    added = 0
     for page in client.get_paginator('describe_load_balancers').paginate(PaginationConfig={'PageSize': 20}):
         page_items = []
         for item in page['LoadBalancers']:
-            if item['Type'] == 'application' or item['Type'] == 'gateway':
+            if item['Type'] != 'network':
                 continue
-            print(item['LoadBalancerName'])
+            if vpc_id and item['VpcId'] != vpc_id:
+                continue
+            if vpc_id:
+                target_groups = {
+                    item['LoadBalancerArn']: client.describe_target_groups(
+                        LoadBalancerArn=item['LoadBalancerArn'])['TargetGroups']
+                }
             info = {
                 'date_added': cur_date,
                 'region': region,
                 'resource_id': item['LoadBalancerName'],
                 'vpc_id': item['VpcId'],
-                'vpc_name': db.get_item(models.Vpc, vpc_id=item['VpcId'])['name'],
                 'name': item['LoadBalancerName'],
                 'type': item['Type'],
                 'scheme': item.get('Scheme', ''),
@@ -28,18 +37,26 @@ def sync_elbs(region='us-east-1'):
                 'created_time': item['CreatedTime'],
                 'subnets': [{
                     'resource_id': az['SubnetId'],
-                    'name': db.get_item(models.Subnet, resource_id=az['SubnetId'])['name']
                 } for az in item['AvailabilityZones']],
                 'listeners': get_listeners(client, item['LoadBalancerArn'],
                                            target_groups.get(item['LoadBalancerArn'], [])),
             }
             page_items.append(info)
+            added += 1
         get_lb_tags(client, page_items)
         db.replace_items(models.LoadBalancer, page_items)
-    db.delete_items(models.LoadBalancer, type='network', date_added__ne=cur_date)
+    del_query = {
+        'region': region,
+        'date_added__ne': cur_date,
+        'type': 'network'
+    }
+    if vpc_id:
+        del_query['vpc_id'] = vpc_id
+    deleted = db.delete_items(models.LoadBalancer, **del_query)
+    return {'added': added, 'deleted': deleted}
 
 
-def get_all_target_groups(client):
+def get_all_target_groups(client, vpc_id=''):
     """
     Get all target groups and store them in a dict with key as the loadbalancer arn
     """
@@ -47,6 +64,8 @@ def get_all_target_groups(client):
     for page in client.get_paginator('describe_target_groups').paginate():
         page_items = []
         for item in page['TargetGroups']:
+            if vpc_id and item['VpcId'] != vpc_id:
+                continue
             for lb_arn in item['LoadBalancerArns']:
                 if lb_arn not in tgt_groups:
                     tgt_groups[lb_arn] = []
@@ -80,19 +99,13 @@ def get_listeners(client, lb_arn, target_groups_list):
     return data
 
 
-def get_targets(client, target_arn, target_groups_list):
+def get_targets(client, target_arn, target_groups_list=None):
     data = []
     tgt_group = [
         i for i in target_groups_list if i['TargetGroupArn'] == target_arn][0]
     for tgt in client.describe_target_health(TargetGroupArn=target_arn)['TargetHealthDescriptions']:
-        inst_info = db.get_item(
-            models.Instance, resource_id=tgt['Target']['Id'])
-        if not inst_info:
-            inst_info = {}
         item = {
             'resource_id': tgt['Target']['Id'],
-            'name': inst_info.get('name', ''),
-            'az': inst_info.get('az', ''),
             'target_port': tgt['Target']['Port'],
             'target_protocol': tgt_group['Protocol'],
         }
@@ -100,5 +113,24 @@ def get_targets(client, target_arn, target_groups_list):
     return data
 
 
+def add_reference_info(region='us-east-1', vpc_id=''):
+    query = aws_resources.common.get_query_dict(region, vpc_id)
+    query['type'] = 'network'
+    for lb in models.LoadBalancer.objects(**query):
+        lb.vpc_name = db.get_item(models.Vpc, resource_id=lb.vpc_id)['name']
+        subnets = copy.deepcopy(lb['subnets'])
+        for subnet in subnets:
+            subnet['name'] = db.get_item(
+                models.Subnet, resource_id=subnet['resource_id'])['name']
+        lb['subnets'] = subnets
+        listeners = copy.deepcopy(lb['listeners'])
+        for listener in listeners:
+            for inst in listener['instances']:
+                inst['name'] = db.get_item(
+                    models.Instance, resource_id=inst['resource_id'])['name']
+        lb['listeners'] = listeners
+        lb.save()
+
+
 if __name__ == "__main__":
-    sync_elbs()
+    sync()
