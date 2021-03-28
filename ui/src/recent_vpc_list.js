@@ -55,7 +55,7 @@ export default class RecentVpcList extends React.Component {
 
     getRecentVpcs = () => {
         var data = []
-        JSON.parse(window.localStorage.getItem('vpcs')).forEach(vpcId => {
+        JSON.parse(window.localStorage.getItem('vpcs') || "[]").forEach(vpcId => {
             data.push(JSON.parse(window.localStorage.getItem(vpcId)))
         })
         return new Promise((resolve, reject) => {
