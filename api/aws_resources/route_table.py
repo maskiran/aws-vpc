@@ -2,10 +2,10 @@ import datetime
 from aws_utils import get_boto3_resource, add_tags_as_keys, get_name_tag, normalize_tags_list
 import db
 import models
-import aws_resources.common
 
 
 def sync(region='us-east-1', vpc_id=''):
+    db.get_connection()
     cur_date = datetime.datetime.utcnow()
     ec2 = get_boto3_resource('ec2', region)
     query = []
@@ -25,6 +25,7 @@ def sync(region='us-east-1', vpc_id=''):
                 'name': get_name_tag(item['Tags'], item['RouteTableId']),
                 'tags': normalize_tags_list(item['Tags']),
                 'vpc_id': item['VpcId'],
+                'vpc_name': db.get_item(models.Vpc, resource_id=item['VpcId'])['name'],
                 'subnets': [assoc['SubnetId'] for assoc in item['Associations'] if not assoc['Main']],
                 'routes': get_routes(item['Routes']),
                 'main': is_main_rtable(item)
@@ -71,10 +72,6 @@ def is_main_rtable(route_table):
         if main is True:
             break
     return main
-
-
-def add_reference_info(region='us-east-1', vpc_id=''):
-    aws_resources.common.add_vpc_name(models.RouteTable, region, vpc_id)
 
 
 if __name__ == "__main__":

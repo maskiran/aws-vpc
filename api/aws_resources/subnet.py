@@ -2,10 +2,10 @@ import datetime
 from aws_utils import get_boto3_resource, add_tags_as_keys, get_name_tag, normalize_tags_list
 import db
 import models
-import aws_resources.common
 
 
 def sync(region='us-east-1', vpc_id=''):
+    db.get_connection()
     cur_date = datetime.datetime.utcnow()
     client = get_boto3_resource('ec2', region)
     query = []
@@ -25,9 +25,11 @@ def sync(region='us-east-1', vpc_id=''):
                 'name': get_name_tag(item['Tags'], item['SubnetId']),
                 'tags': normalize_tags_list(item['Tags']),
                 'vpc_id': item['VpcId'],
+                'vpc_name': db.get_item(models.Vpc, resource_id=item['VpcId'])['name'],
                 'cidr': item['CidrBlock'],
                 'az': item['AvailabilityZone'],
                 'arn': item['SubnetArn'],
+                'route_table': get_route_table(region, item['VpcId'], item['SubnetId'])
             }
             add_tags_as_keys(info, item['Tags'])
             page_items.append(info)
@@ -43,33 +45,27 @@ def sync(region='us-east-1', vpc_id=''):
     return {'added': added, 'deleted': deleted}
 
 
-def add_reference_info(region='us-east-1', vpc_id=''):
+def get_route_table(region, vpc_id, subnet_id):
     """
     add route table name, id to the subnets
     """
-    query = aws_resources.common.get_query_dict(region, vpc_id)
-    for subnet in models.Subnet.objects(**query):
-        # find if there is an explicit route table for this subnet,
-        # if not add the main/default rtable
+    # find if there is an explicit route table for this subnet,
+    # if not add the main/default rtable
+    rtables = models.RouteTable.objects(
+        subnets=subnet_id, region=region)
+    if len(rtables) > 0:
+        # explicit route table is associated
+        rtable = rtables[0]
+    else:
+        # implicit/default route table is associated
         rtables = models.RouteTable.objects(
-            subnets=subnet.resource_id, region=region)
-        if len(rtables) > 0:
-            # explicit route table is associated
-            rtable = rtables[0]
-        else:
-            # implicit/default route table is associated
-            rtables = models.RouteTable.objects(
-                main=True, vpc_id=subnet.vpc_id, region=region)
-            rtable = rtables[0]
-        subnet.route_table = {
-            'name': rtable.name,
-            'resource_id': rtable.resource_id
-        }
-        # get the vpc name also as part of the this post processing
-        subnet.vpc_name = db.get_item(models.Vpc, resource_id=subnet.vpc_id)['name']
-        subnet.save()
+            main=True, vpc_id=vpc_id, region=region)
+        rtable = rtables[0]
+    return {
+        'name': rtable.name,
+        'resource_id': rtable.resource_id
+    }
 
 
 if __name__ == "__main__":
     sync()
-    add_reference_info()

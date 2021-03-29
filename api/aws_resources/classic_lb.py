@@ -3,10 +3,10 @@ import datetime
 from aws_utils import get_boto3_resource, add_tags_as_keys, get_name_tag, normalize_tags_list
 import db
 import models
-import aws_resources.common
 
 
 def sync(region='us-east-1', vpc_id=''):
+    db.get_connection()
     cur_date = datetime.datetime.utcnow()
     client = get_boto3_resource('elb', region)
     added = 0
@@ -20,16 +20,19 @@ def sync(region='us-east-1', vpc_id=''):
                 'region': region,
                 'resource_id': item['LoadBalancerName'],
                 'vpc_id': item['VPCId'],
+                'vpc_name': db.get_item(models.Vpc, vpc_id=item['VPCId'])['name'],                
                 'name': item['LoadBalancerName'],
                 'type': 'classic',
                 'scheme': item['Scheme'],
                 'created_time': item['CreatedTime'],
                 'subnets': [{
                     'resource_id': subnet,
+                    'name': db.get_item(models.Subnet, resource_id=subnet)['name']
                 } for subnet in item['Subnets']],
                 'security_groups': [
                     {
                         'resource_id': sg,
+                        'name': db.get_item(models.SecurityGroup, resource_id=sg)['name']
                     } for sg in item['SecurityGroups']],
                 'dns': item['DNSName'],
                 'listeners': get_listeners(item)
@@ -88,22 +91,6 @@ def get_instances(lb_item, listener):
             'target_protocol': listener['InstanceProtocol'],
         })
     return data
-
-
-def add_reference_info(region='us-east-1', vpc_id=''):
-    query = aws_resources.common.get_query_dict(region, vpc_id)
-    query['type'] = 'classic'
-    for lb in models.LoadBalancer.objects(**query):
-        lb.vpc_name = db.get_item(models.Vpc, resource_id=lb.vpc_id)['name']
-        subnets = copy.deepcopy(lb['subnets'])
-        for subnet in subnets:
-            subnet['name'] = db.get_item(models.Subnet, resource_id=subnet['resource_id'])['name']
-        lb.subnets = subnets
-        security_groups = copy.deepcopy(lb['security_groups'])
-        for sg in security_groups:
-            sg['name'] = db.get_item(models.SecurityGroup, resource_id=sg['resource_id'])['name']
-        lb['security_groups'] = security_groups
-        lb.save()
 
 
 if __name__ == "__main__":

@@ -3,10 +3,10 @@ import datetime
 from aws_utils import get_boto3_resource, add_tags_as_keys, get_name_tag, normalize_tags_list
 import db
 import models
-import aws_resources.common
 
 
 def sync(region='us-east-1', vpc_id=''):
+    db.get_connection()
     cur_date = datetime.datetime.utcnow()
     ec2 = get_boto3_resource('ec2', region)
     query = []
@@ -26,6 +26,7 @@ def sync(region='us-east-1', vpc_id=''):
                 'name': item['GroupName'],
                 'tags': normalize_tags_list(item['Tags']),
                 'vpc_id': item['VpcId'],
+                'vpc_name': db.get_item(models.Vpc, resource_id=item['VpcId'])['name'],
                 'ingress_rules': get_rules(item['IpPermissions'], "source"),
                 'egress_rules': get_rules(item['IpPermissionsEgress'], "destination"),
             }
@@ -63,10 +64,6 @@ def get_rules(rule_list, target_type="source"):
             sg_rule['description'] = sg.get('Description', "")
             new_rule_list.append(sg_rule)
     return new_rule_list
-
-
-def add_reference_info(region='us-east-1', vpc_id=''):
-    aws_resources.common.add_vpc_name(models.SecurityGroup, region, vpc_id)
 
 
 if __name__ == "__main__":

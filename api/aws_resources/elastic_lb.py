@@ -3,10 +3,10 @@ import datetime
 from aws_utils import get_boto3_resource, add_tags_as_keys, get_name_tag, normalize_tags_list
 import db
 import models
-import aws_resources.common
 
 
 def sync(region='us-east-1', vpc_id=''):
+    db.get_connection()
     cur_date = datetime.datetime.utcnow()
     client = get_boto3_resource('elbv2', region)
     if not vpc_id:
@@ -29,6 +29,7 @@ def sync(region='us-east-1', vpc_id=''):
                 'region': region,
                 'resource_id': item['LoadBalancerName'],
                 'vpc_id': item['VpcId'],
+                'vpc_name': db.get_item(models.Vpc, vpc_id=item['VpcId'])['name'],
                 'name': item['LoadBalancerName'],
                 'type': item['Type'],
                 'scheme': item.get('Scheme', ''),
@@ -37,6 +38,7 @@ def sync(region='us-east-1', vpc_id=''):
                 'created_time': item['CreatedTime'],
                 'subnets': [{
                     'resource_id': az['SubnetId'],
+                    'name': db.get_item(models.Subnet, resource_id=az['SubnetId'])['name']
                 } for az in item['AvailabilityZones']],
                 'listeners': get_listeners(client, item['LoadBalancerArn'],
                                            target_groups.get(item['LoadBalancerArn'], [])),
@@ -111,25 +113,6 @@ def get_targets(client, target_arn, target_groups_list=None):
         }
         data.append(item)
     return data
-
-
-def add_reference_info(region='us-east-1', vpc_id=''):
-    query = aws_resources.common.get_query_dict(region, vpc_id)
-    query['type'] = 'network'
-    for lb in models.LoadBalancer.objects(**query):
-        lb.vpc_name = db.get_item(models.Vpc, resource_id=lb.vpc_id)['name']
-        subnets = copy.deepcopy(lb['subnets'])
-        for subnet in subnets:
-            subnet['name'] = db.get_item(
-                models.Subnet, resource_id=subnet['resource_id'])['name']
-        lb['subnets'] = subnets
-        listeners = copy.deepcopy(lb['listeners'])
-        for listener in listeners:
-            for inst in listener['instances']:
-                inst['name'] = db.get_item(
-                    models.Instance, resource_id=inst['resource_id'])['name']
-        lb['listeners'] = listeners
-        lb.save()
 
 
 if __name__ == "__main__":
