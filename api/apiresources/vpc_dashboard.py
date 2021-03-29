@@ -12,6 +12,14 @@ def vpc_dashboard(vpc_id=None):
     else:
         query = {}
     return {
+        # 'regions': len(models.Vpc.objects.search_text(vpc_id).distinct('region')),
+        # 'vpcs': models.Vpc.objects.count(),
+        # 'subnets': models.Subnet.objects.search_text(vpc_id).count(),
+        # 'security_groups': models.SecurityGroup.objects.search_text(vpc_id).count(),
+        # 'route_tables': models.RouteTable.objects.search_text(vpc_id).count(),
+        # 'instances': models.Instance.objects.search_text(vpc_id).count(),
+        # 'load_balancers': models.LoadBalancer.objects.search_text(vpc_id).count(),
+        'regions': len(models.Vpc.objects(**query).distinct('region')),
         'vpcs': models.Vpc.objects.count(),
         'subnets': models.Subnet.objects(**query).count(),
         'security_groups': models.SecurityGroup.objects(**query).count(),
