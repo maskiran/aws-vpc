@@ -5,8 +5,9 @@ from mongoengine import get_db, connect
 from pymongo import ReplaceOne
 
 
-db_url = os.getenv('MONGODB_HOST', 'mongodb://localhost/aws')
-connect(host=db_url, connect=False)
+def get_connection():
+    db_url = os.getenv('MONGODB_HOST', 'mongodb://localhost/aws')
+    connect(host=db_url, connect=False)
 
 
 def create_item(model_cls_name, item):
@@ -53,9 +54,11 @@ def get_items(model_cls_name, json_output=True, page_size=25, page=1, sort='name
     if 'search' in kwargs:
         search = kwargs.pop('search')
     if search:
-        rsp = model_cls_name.objects(**kwargs).search_text(search).order_by('$text_score')
+        rsp = model_cls_name.objects(
+            **kwargs).search_text(search).order_by('$text_score')
     else:
-        rsp = model_cls_name.objects(**kwargs).collation({'locale': 'en', 'numericOrdering': True})
+        rsp = model_cls_name.objects(
+            **kwargs).collation({'locale': 'en', 'numericOrdering': True})
         if sort:
             rsp = rsp.order_by(sort)
     count = rsp.count()
