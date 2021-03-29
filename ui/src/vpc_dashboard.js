@@ -50,6 +50,12 @@ export default class VpcDashboard extends React.Component {
     renderVpcStatCards = () => {
         var stats = [
             {
+                title: 'Regions',
+                icon: getIcon('subnets'),
+                value: this.state.vpcStats.regions,
+                color: "green"
+            },
+            {
                 title: 'Subnets',
                 icon: getIcon('subnets'),
                 value: this.state.vpcStats.subnets,
