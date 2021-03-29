@@ -20,6 +20,7 @@ export default class PageHeader extends React.Component {
         var oldVpcId = vpcFilter(prevProps.location.search, false)
         if (oldVpcId != newVpcId) {
             this.setState({ vpcId: newVpcId })
+            this.getVpcDetails(newVpcId)
         }
     }
 
@@ -40,9 +41,12 @@ export default class PageHeader extends React.Component {
         }
     }
 
-    getVpcDetails = () => {
-        if (this.state.vpcId) {
-            axios.get('/api/vpcs/' + this.state.vpcId).then(rsp => {
+    getVpcDetails = (vpcId) => {
+        if (typeof vpcId === "undefined") {
+            vpcId = this.state.vpcId
+        }
+        if (vpcId) {
+            axios.get('/api/vpcs/' + vpcId).then(rsp => {
                 this.setState({ vpcDetails: rsp.data })
             })
         }
