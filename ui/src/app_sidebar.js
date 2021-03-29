@@ -49,11 +49,11 @@ export default class AppSidebar extends React.Component {
                     <Menu.Item key='/vpcdashboard' icon={<DashboardOutlined />}>
                         <Link to={'/vpcdashboard' + vpcSearch}>VPC Dashboard</Link>
                     </Menu.Item>
-                    <Menu.Item key='/subnets' icon={getIcon('subnets')}>
-                        <Link to={'/subnets' + vpcSearch}>Subnets ({this.state.vpcStats.subnets})</Link>
-                    </Menu.Item>
                     <Menu.Item key='/route-tables' icon={getIcon('route-tables')}>
                         <Link to={'/route-tables' + vpcSearch}>Route Tables ({this.state.vpcStats.route_tables})</Link>
+                    </Menu.Item>
+                    <Menu.Item key='/subnets' icon={getIcon('subnets')}>
+                        <Link to={'/subnets' + vpcSearch}>Subnets ({this.state.vpcStats.subnets})</Link>
                     </Menu.Item>
                     <Menu.Item key='/security-groups' icon={getIcon('security-groups')}>
                         <Link to={'/security-groups' + vpcSearch}>Security Groups ({this.state.vpcStats.security_groups})</Link>
