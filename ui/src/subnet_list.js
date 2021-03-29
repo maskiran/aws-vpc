@@ -1,7 +1,7 @@
 import React from 'react'
 import ItemsList from 'react-antd-itemslist'
 import { Space, Table, Typography } from 'antd'
-import { vpcFilter } from './utils'
+import { vpcFilter, Copy } from './utils'
 import ObjectTable from './object_table'
 
 export default class SubnetList extends React.Component {
@@ -40,14 +40,16 @@ export default class SubnetList extends React.Component {
                 dataIndex: 'resource_id',
             },
             {
-                title: 'VPC ID',
+                title: 'VPC Id',
                 dataIndex: 'vpc_id',
-                hide: this.filteredVpc ? true : false,
+                hide: true,
             },
             {
                 title: 'VPC Name',
                 dataIndex: 'vpc_name',
-                hide: this.filteredVpc ? true : false,
+                render: (text, record) => {
+                    return <Copy text={text} tooltip={record.vpc_id} maincopy={false} />
+                }
             },
             {
                 title: 'CIDR',

@@ -48,15 +48,13 @@ export default class LoadBalancerList extends React.Component {
                 }
             },
             {
-                title: 'VPC',
+                title: 'VPC Id',
                 dataIndex: 'vpc_id',
-                // hide: this.filteredVpc ? true : false,
                 hide: true,
             },
             {
                 title: 'VPC Name',
                 dataIndex: 'vpc_name',
-                hide: this.filteredVpc ? true : false,
                 render: (text, record) => {
                     return <Copy text={text} tooltip={record.vpc_id} maincopy={false} />
                 }

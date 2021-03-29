@@ -1,7 +1,7 @@
 import React from 'react';
 import ItemsList from 'react-antd-itemslist';
 import { Space, Table, Tabs } from 'antd';
-import { vpcFilter } from './utils'
+import { vpcFilter, Copy } from './utils'
 import ObjectTable from './object_table';
 
 
@@ -41,14 +41,20 @@ export default class SecurityGroupList extends React.Component {
                 dataIndex: 'resource_id'
             },
             {
-                title: 'VPC',
+                title: 'VPC Id',
                 dataIndex: 'vpc_id',
-                hide: this.filteredVpc ? true : false,
+                hide: true,
             },
             {
                 title: 'VPC Name',
                 dataIndex: 'vpc_name',
-                hide: this.filteredVpc ? true : false,
+                render: (text, record) => {
+                    return <Copy text={text} tooltip={record.vpc_id} maincopy={false} />
+                }
+            },
+            {
+                title: 'Region',
+                dataIndex: 'region',
             },
         ]
     }
