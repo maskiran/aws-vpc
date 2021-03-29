@@ -17,6 +17,7 @@ def create_indexes():
             col.create_index('tags', name='tags')
             col.create_index('name', name='name')
             col.create_index('vpc_id', name='vpc_id')
+            col.create_index('region', name='region')
 
 
 class BaseDocument(DynamicDocument):
