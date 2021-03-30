@@ -6,7 +6,6 @@ import models
 
 
 def sync(region='us-east-1', vpc_id=''):
-    db.get_connection()
     cur_date = datetime.datetime.utcnow()
     client = get_boto3_resource('elb', region)
     added = 0
