@@ -8,6 +8,7 @@ import models
 def sync(region='us-east-1', vpc_id=''):
     cur_date = datetime.datetime.utcnow()
     client = get_boto3_resource('elbv2', region)
+    account_id = get_boto3_resource('sts').get_caller_identity()['Account']
     if not vpc_id:
         target_groups = get_all_target_groups(client, vpc_id)
     added = 0
@@ -26,6 +27,7 @@ def sync(region='us-east-1', vpc_id=''):
             info = {
                 'date_added': cur_date,
                 'region': region,
+                'account_id': account_id,
                 'resource_id': item['LoadBalancerName'],
                 'vpc_id': item['VpcId'],
                 'vpc_name': db.get_item(models.Vpc, vpc_id=item['VpcId'])['name'],
@@ -115,4 +117,5 @@ def get_targets(client, target_arn, target_groups_list=None):
 
 
 if __name__ == "__main__":
+    db.get_connection()
     sync()

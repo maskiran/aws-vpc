@@ -8,6 +8,7 @@ import models
 def sync(region='us-east-1', vpc_id=''):
     cur_date = datetime.datetime.utcnow()
     client = get_boto3_resource('elb', region)
+    account_id = get_boto3_resource('sts').get_caller_identity()['Account']
     added = 0
     for page in client.get_paginator('describe_load_balancers').paginate(PaginationConfig={'PageSize': 20}):
         page_items = []
@@ -17,6 +18,7 @@ def sync(region='us-east-1', vpc_id=''):
             info = {
                 'date_added': cur_date,
                 'region': region,
+                'account_id': account_id,
                 'resource_id': item['LoadBalancerName'],
                 'vpc_id': item['VPCId'],
                 'vpc_name': db.get_item(models.Vpc, vpc_id=item['VPCId'])['name'],                
@@ -93,4 +95,5 @@ def get_instances(lb_item, listener):
 
 
 if __name__ == "__main__":
+    db.get_connection()
     sync()
