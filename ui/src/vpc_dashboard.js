@@ -50,12 +50,6 @@ export default class VpcDashboard extends React.Component {
     renderVpcStatCards = () => {
         var stats = [
             {
-                title: 'Regions',
-                icon: getIcon('subnets'),
-                value: this.state.vpcStats.regions,
-                color: "green"
-            },
-            {
                 title: 'Subnets',
                 icon: getIcon('subnets'),
                 value: this.state.vpcStats.subnets,
@@ -80,6 +74,14 @@ export default class VpcDashboard extends React.Component {
                 color: "red"
             },
         ]
+        if (!this.vpcId) {
+            stats.unshift({
+                title: 'Regions',
+                icon: getIcon('subnets'),
+                value: this.state.vpcStats.regions,
+                color: "green"
+            })
+        }
         var cardStyle = {
             border: "2px solid #cccccc",
             borderRadius: "6px",
