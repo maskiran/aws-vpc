@@ -2,8 +2,8 @@ import boto3
 from botocore.config import Config
 
 
-def get_credentials():
-    role_arn = 'arn:aws:iam::902505820678:role/mainaccount'
+def get_credentials(role_arn):
+    # role_arn = 'arn:aws:iam::902505820678:role/mainaccount'
     sts = boto3.client('sts')
     assumed_role = sts.assume_role(
         RoleArn=role_arn, RoleSessionName='caller')
@@ -15,16 +15,28 @@ def get_credentials():
     }
 
 
-def get_boto3_resource(resource_name, region='us-east-1'):
+def get_boto3_resource(resource_name, region='us-east-1', creds=None):
     config = Config(
         retries={
-            'max_attempts': 10,
+            'max_attempts': 100,
             'mode': 'standard'
         }
     )
-    creds = get_credentials()
-    obj = boto3.client(resource_name, region_name=region, config=config, **creds)
-    return obj
+    if creds is None:
+        creds = {}
+    # check if creds have a role to assume
+    if 'role_arn' in creds:
+        role_arn = creds.pop('role_arn')
+        if role_arn:
+            creds = get_credentials(creds['role_arn'])
+    # no role_arn: so the creds have the access_key and secret or
+    # or None so boto3 can read from default locations
+    # (env AWS_PROFILE or default .aws/creds or instance metadata)
+    client = boto3.client(resource_name, region_name=region,
+                          config=config, **creds)
+    sts = boto3.client('sts', region_name=region, config=config, **creds)
+    account_id = sts.get_caller_identity()['Account']
+    return client, account_id
 
 
 def get_name_tag(tags_list, default_value='noname'):
