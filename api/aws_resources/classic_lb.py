@@ -1,16 +1,19 @@
 import copy
 import datetime
+import logging
 from aws_utils import get_boto3_resource, add_tags_as_keys, get_name_tag, normalize_tags_list
 import db
 import models
 
 
-def sync(region='us-east-1', vpc_id=''):
+def sync(region, creds, vpc_id=''):
     cur_date = datetime.datetime.utcnow()
-    client = get_boto3_resource('elb', region)
-    account_id = get_boto3_resource('sts').get_caller_identity()['Account']
+    client, account_id = get_boto3_resource('elb', region, creds)
+    logging.info('Syncing Classic Load Balancers %s %s %s',
+             account_id, region, vpc_id)
     added = 0
     for page in client.get_paginator('describe_load_balancers').paginate(PaginationConfig={'PageSize': 20}):
+        logging.info('Got page with item count %s', len(page['LoadBalancerDescriptions']))
         page_items = []
         for item in page['LoadBalancerDescriptions']:
             if vpc_id and item['VPCId'] != vpc_id:
@@ -21,7 +24,7 @@ def sync(region='us-east-1', vpc_id=''):
                 'account_id': account_id,
                 'resource_id': item['LoadBalancerName'],
                 'vpc_id': item['VPCId'],
-                'vpc_name': db.get_item(models.Vpc, vpc_id=item['VPCId'])['name'],                
+                'vpc_name': db.get_item(models.Vpc, vpc_id=item['VPCId'])['name'],
                 'name': item['LoadBalancerName'],
                 'type': 'classic',
                 'scheme': item['Scheme'],
@@ -42,15 +45,20 @@ def sync(region='us-east-1', vpc_id=''):
             added += 1
         get_lb_tags(client, page_items)
         db.replace_items(models.LoadBalancer, page_items)
+    logging.info('Addition done')
     del_query = {
         'region': region,
+        'account_id': account_id,
         'date_added__ne': cur_date,
         'type': 'classic'
     }
     if vpc_id:
         del_query['vpc_id'] = vpc_id
     deleted = db.delete_items(models.LoadBalancer, **del_query)
-    return {'added': added, 'deleted': deleted}
+    logging.info('Delete done')
+    rsp = {'added': added, 'deleted': deleted}
+    logging.info(rsp)
+    return rsp
 
 
 def get_lb_tags(client, lb_items_list):
