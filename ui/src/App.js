@@ -19,7 +19,7 @@ export default class App extends React.Component {
                         style={{ boxShadow: "0px 0px 10px 0px #777777" }}>
                         <Route path="/" component={AppSidebar} />
                     </Layout.Sider>
-                    <Layout.Content style={{ padding: "20px 20px", backgroundColor2: "red" }}>
+                    <Layout.Content style={{ padding: "25px 25px", backgroundColor2: "red" }}>
                         {Routes}
                     </Layout.Content>
                 </Layout>
