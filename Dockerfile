@@ -1,4 +1,4 @@
-FROM alpine as ui
+FROM node as ui
 COPY ui /svc
 WORKDIR /svc
 RUN apk update && apk add npm
