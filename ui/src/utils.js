@@ -32,57 +32,30 @@ export const vpcFilter = (urlSearch, stringify = "vpc_id") => {
 /**
  * @augments {Component<Props, State>}
  */
-export class TrimField extends React.Component {
-    static propTypes = {
-        /** text to show in ellipsis if greater than maxSize */
-        text: PropTypes.string,
-        /** tooltip text, defaults to text */
-        tooltip: PropTypes.string,
-        /** maxSize, size of the string after which ellipsis are used */
-        maxSize: PropTypes.number
-    }
-
-    static defaultProps = {
-        maxSize: 15
-    }
-
-    render() {
-        var cellText = this.props.text
-        if (cellText.length > this.props.maxSize) {
-            var lastIdx = cellText.length;
-            // show first 10 and last 6 chars
-            cellText = cellText.substring(0, 10) + '...' + cellText.substring(lastIdx - 6, lastIdx);
-        }
-        var tooltip = this.props.tooltip
-        if (!tooltip) {
-            tooltip = this.props.text
-        }
-        return <Copy text={cellText} tooltip={tooltip} maincopy={false} />
-    }
-}
-
-/**
- * @augments {Component<Props, State>}
- */
 export class Copy extends React.Component {
     static propTypes = {
         /** text to show in ellipsis if greater than maxSize */
-        text: PropTypes.string,
+        text: PropTypes.node,
         /** tooltip text, defaults to text */
-        tooltip: PropTypes.string,
+        tooltip: PropTypes.node,
         /** true/false to make the text copyable or not, default true */
         maincopy: PropTypes.bool,
         /** true/false to make the tooltip copyable or not, default true */
-        tooltipcopy: PropTypes.bool
+        tooltipcopy: PropTypes.bool,
+        /** trim the main text to show only the given count chars. This will be split
+         * into first half and last half of the string, default 0 - no trim */
+        trim: PropTypes.number
     }
 
     static defaultProps = {
         maincopy: true,
-        tooltipcopy: true
+        tooltipcopy: true,
+        trim: 0,
     }
 
     render() {
         var mainCopyable = {
+            text: this.props.text,
             tooltips: false
         }
         if (this.props.maincopy === false) {
@@ -94,13 +67,27 @@ export class Copy extends React.Component {
         if (this.props.tooltipcopy === false) {
             tooltipCopyable = false
         }
-        if (this.props.tooltip) {
-            var tooltip = <Typography.Text copyable={tooltipCopyable}>{this.props.tooltip}</Typography.Text>
+        var mainText = this.props.text
+        var toolTipText = this.props.tooltip
+        if (this.props.trim) {
+            if (mainText.length > this.props.trim) {
+                var lastIdx = mainText.length;
+                // show first 10 and last 6 chars
+                mainText = mainText.substring(0, this.props.trim/2) + '...' + mainText.substring(lastIdx - this.props.trim/2, lastIdx);
+                // if trimmed and no tooltip has been defined, show the untrimmed text as tooltip
+                if (!toolTipText) {
+                    toolTipText = this.props.text
+                }
+            }
+    
+        }
+        if (toolTipText) {
+            var tooltip = <Typography.Text copyable={tooltipCopyable}>{toolTipText}</Typography.Text>
             return <Tooltip title={tooltip} color="white">
-                <Typography.Text copyable={mainCopyable}>{this.props.text}</Typography.Text>
+                <Typography.Text copyable={mainCopyable}>{mainText}</Typography.Text>
             </Tooltip>
         } else {
-            return <Typography.Text copyable={mainCopyable}>{this.props.text}</Typography.Text>
+            return <Typography.Text copyable={mainCopyable}>{mainText}</Typography.Text>
         }
     }
 }
