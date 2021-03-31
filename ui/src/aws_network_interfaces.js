@@ -1,5 +1,5 @@
 import React from 'react'
-import { Table, Tooltip, Typography } from 'antd'
+import { Space, Table } from 'antd'
 import { Copy } from './utils'
 
 export default class AWSNetworkInterfaces extends React.Component {
@@ -15,7 +15,7 @@ export default class AWSNetworkInterfaces extends React.Component {
             title: 'Subnet',
             dataIndex: 'subnet',
             render: (subnet) => {
-                return <Copy text={subnet.name} tooltip={subnet.resource_id} />
+                return <Copy text={subnet.name} tooltip={subnet.resource_id} trim={16} />
             }
         },
         {
@@ -51,9 +51,10 @@ export default class AWSNetworkInterfaces extends React.Component {
             title: 'Security Groups',
             dataIndex: 'security_groups',
             render: (sgList) => {
-                return sgList.map(sg => {
-                    return <Copy text={sg.name} tooltip={sg.resource_id} key={sg.name} />
+                var sgItems = sgList.map(sg => {
+                    return <Copy text={sg.name} tooltip={sg.resource_id} key={sg.name} trim={16} />
                 })
+                return <Space direction="vertical">{sgItems}</Space>
             }
         },
     ]
