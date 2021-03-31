@@ -81,6 +81,12 @@ export default class VpcDashboard extends React.Component {
                 value: this.state.vpcStats.regions,
                 color: "green"
             })
+            stats.unshift({
+                title: 'Accounts',
+                icon: getIcon('subnets'),
+                value: this.state.vpcStats.accounts,
+                color: "green"
+            })
         }
         var cardStyle = {
             border: "2px solid #cccccc",
