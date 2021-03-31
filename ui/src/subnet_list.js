@@ -40,6 +40,10 @@ export default class SubnetList extends React.Component {
                 dataIndex: 'resource_id',
             },
             {
+                title: 'Account',
+                dataIndex: 'account_id'
+            },
+            {
                 title: 'VPC Id',
                 dataIndex: 'vpc_id',
                 hide: true,
@@ -52,13 +56,13 @@ export default class SubnetList extends React.Component {
                 }
             },
             {
+                title: 'AZ',
+                dataIndex: 'az'
+            },
+            {
                 title: 'CIDR',
                 dataIndex: 'cidr'
             },
-            {
-                title: 'AZ',
-                dataIndex: 'az'
-            }
         ]
     }
 

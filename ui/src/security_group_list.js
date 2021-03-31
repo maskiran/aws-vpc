@@ -41,6 +41,14 @@ export default class SecurityGroupList extends React.Component {
                 dataIndex: 'resource_id'
             },
             {
+                title: 'Account',
+                dataIndex: 'account_id'
+            },
+            {
+                title: 'Region',
+                dataIndex: 'region',
+            },
+            {
                 title: 'VPC Id',
                 dataIndex: 'vpc_id',
                 hide: true,
@@ -51,10 +59,6 @@ export default class SecurityGroupList extends React.Component {
                 render: (text, record) => {
                     return <Copy text={text} tooltip={record.vpc_id} maincopy={false} />
                 }
-            },
-            {
-                title: 'Region',
-                dataIndex: 'region',
             },
         ]
     }

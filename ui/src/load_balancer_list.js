@@ -41,6 +41,14 @@ export default class LoadBalancerList extends React.Component {
                 viewItemLink: true,
             },
             {
+                title: 'Account',
+                dataIndex: 'account_id'
+            },
+            {
+                title: 'Region',
+                dataIndex: 'region'
+            },
+            {
                 title: 'Type',
                 dataIndex: 'type',
                 render: (text, record) => {
@@ -58,10 +66,6 @@ export default class LoadBalancerList extends React.Component {
                 render: (text, record) => {
                     return <Copy text={text} tooltip={record.vpc_id} maincopy={false} />
                 }
-            },
-            {
-                title: 'Region',
-                dataIndex: 'region'
             },
             {
                 title: 'Subnets',

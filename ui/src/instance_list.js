@@ -48,6 +48,10 @@ export default class InstanceList extends React.Component {
                 dataIndex: 'resource_id'
             },
             {
+                title: 'Account',
+                dataIndex: 'account_id'
+            },
+            {
                 title: 'VPC Id',
                 dataIndex: 'vpc_id',
                 hide: true,
@@ -60,6 +64,11 @@ export default class InstanceList extends React.Component {
                 }
             },
             {
+                title: 'AZ',
+                dataIndex: 'az',
+                className: 'td-fit',
+            },
+            {
                 title: 'Launch Time',
                 dataIndex: 'launch_time',
                 render: (text) => {
@@ -69,10 +78,6 @@ export default class InstanceList extends React.Component {
             {
                 title: 'Type',
                 dataIndex: 'instance_type'
-            },
-            {
-                title: 'AZ',
-                dataIndex: 'az'
             },
             {
                 title: 'State',
