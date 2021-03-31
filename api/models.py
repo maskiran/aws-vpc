@@ -18,6 +18,7 @@ def create_indexes():
             col.create_index('name', name='name')
             col.create_index('vpc_id', name='vpc_id')
             col.create_index('region', name='region')
+            col.create_index('account', name='account_id')
 
 
 class BaseDocument(DynamicDocument):
@@ -39,6 +40,15 @@ class BaseDocument(DynamicDocument):
         ],
         'abstract': True
     }
+
+
+class Account(Document):
+    name = StringField()
+    role_arn = StringField()
+    access_key = StringField()
+    secret_key = StringField()
+    regions = ListField(StringField(), default=['us-east-1'])
+    csp = StringField(default='aws')
 
 
 class Vpc(BaseDocument):
