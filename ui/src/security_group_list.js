@@ -1,8 +1,9 @@
-import React from 'react';
-import ItemsList from 'react-antd-itemslist';
-import { Space, Table, Tabs } from 'antd';
+import React from 'react'
+import ItemsList from 'react-antd-itemslist'
+import { Space, Table, Tabs } from 'antd'
 import { vpcFilter, Copy } from './utils'
-import ObjectTable from './object_table';
+import ObjectTable from './object_table'
+import AWSSecurityGroupRules from './aws_security_group_rules'
 
 
 export default class SecurityGroupList extends React.Component {
@@ -67,58 +68,16 @@ export default class SecurityGroupList extends React.Component {
         return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
             <ObjectTable data={[
                 { label: 'Name', value: details.name },
-                { label: 'Id', value: details.id },
+                { label: 'Id', value: details.resource_id },
             ]} />
             <Tabs>
                 <Tabs.TabPane tab="Inbound Rules" key="inbound">
-                    {this.renderRules(details.ingress_rules)}
+                    <AWSSecurityGroupRules rulesList={details.ingress_rules} />
                 </Tabs.TabPane>
                 <Tabs.TabPane tab="Outbound Rules" key="outbound">
-                    {this.renderRules(details.egress_rules)}
+                    <AWSSecurityGroupRules rulesList={details.egress_rules} />
                 </Tabs.TabPane>
             </Tabs>
         </Space>
-    }
-
-    renderRules = (rulesList) => {
-        // rules dont have any id, so add idx as a key
-        rulesList.forEach((item, idx) => {
-            item.id = idx
-        })
-        var cols = [
-            {
-                title: 'Protocol',
-                dataIndex: 'protocol',
-                render: (text) => {
-                    if (text === "-1") {
-                        return 'All'
-                    } else {
-                        return text
-                    }
-                }
-            },
-            {
-                title: 'Sources',
-                dataIndex: 'source'
-            },
-            {
-                title: 'Ports',
-                dataIndex: 'ignore',
-                render: (text, record) => {
-                    if (record.start_port >= 0 && record.end_port <= 65535) {
-                        if (record.start_port !== record.end_port) {
-                            return record.start_port + ' - ' + record.end_port
-                        } else {
-                            return record.start_port || 'All'
-                        }
-                    } else {
-                        return text
-                    }
-                }
-            },
-        ]
-        return <Table size="small" bordered pagination={false} rowSelection={false}
-            columns={cols} rowKey="id"
-            dataSource={rulesList} />
     }
 }
