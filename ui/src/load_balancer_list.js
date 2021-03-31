@@ -2,8 +2,9 @@ import React from 'react'
 import _ from 'lodash'
 import ItemsList from 'react-antd-itemslist'
 import { Space, Table, Tabs, Tooltip } from 'antd'
-import { vpcFilter, TrimField, Copy } from './utils'
+import { vpcFilter, Copy } from './utils'
 import ObjectTable from './object_table'
+import AWSTags from './aws_tags'
 
 export default class LoadBalancerList extends React.Component {
     filteredVpc = vpcFilter(this.props.location.search, false)
@@ -71,7 +72,7 @@ export default class LoadBalancerList extends React.Component {
                 title: 'Subnets',
                 dataIndex: 'subnets',
                 render: (subnets) => {
-                    return subnets.map(item => <div key={item.name}><TrimField text={item.name} /></div>)
+                    return subnets.map(item => <div key={item.name}><Copy text={item.name} trim={16} maincopy={false} /></div>)
                 }
             },
             {
@@ -101,6 +102,7 @@ export default class LoadBalancerList extends React.Component {
                 { label: 'DNS', value: details['dns'] },
                 { label: 'VPC', value: [details['vpc_name'], details['vpc_id']] },
                 { label: 'Region', value: details['region'] },
+                { label: 'Account', value: details['account_id'] },
                 { label: 'Type', value: details['type'], copyable: false },
                 { label: 'Scheme', value: details['scheme'], copyable: false },
                 { label: 'Subnets', value: this.renderSubnets(details) },
@@ -110,8 +112,12 @@ export default class LoadBalancerList extends React.Component {
                 <Tabs.TabPane tab="Listeners" key='listeners'>
                     {this.renderListeners(details)}
                 </Tabs.TabPane>
-                <Tabs.TabPane tab="Security Groups" key='sgrules'>
+                <Tabs.TabPane tab="Security Groups" key='sgrules'
+                    disabled={!details.security_groups}>
                     {this.renderSecurityGroupRules(details)}
+                </Tabs.TabPane>
+                <Tabs.TabPane tab="Tags" key='tags'>
+                    <AWSTags tags={details.tags} />
                 </Tabs.TabPane>
             </Tabs>
         </Space>
@@ -243,7 +249,7 @@ export default class LoadBalancerList extends React.Component {
                         dataIndex: 'port',
                         render: (text, record) => {
                             var obj = {
-                                children: <Copy text={text} tooltip={record.target_group_arn}/>,
+                                children: <Copy text={text} tooltip={record.target_group_arn} />,
                                 props: {
                                     rowSpan: record.instance_count || 1
                                 }
