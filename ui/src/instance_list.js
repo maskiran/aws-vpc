@@ -6,6 +6,8 @@ import AWSTags from './aws_tags'
 import AWSNetworkInterfaces from './aws_network_interfaces'
 import { vpcFilter, Copy } from './utils'
 import ObjectTable from './object_table'
+import AWSSecurityGroupRules from './aws_security_group_rules'
+import dayjs from 'dayjs'
 
 export default class InstanceList extends React.Component {
     filteredVpc = vpcFilter(this.props.location.search, false)
@@ -14,6 +16,7 @@ export default class InstanceList extends React.Component {
 
     state = {
         activeTabKey: "network",
+        sgRules: [],
     }
 
     render() {
@@ -72,7 +75,9 @@ export default class InstanceList extends React.Component {
                 title: 'Launch Time',
                 dataIndex: 'launch_time',
                 render: (text) => {
-                    return text.$date
+                    var t = dayjs(text.$date)
+                    return <Copy text={t.format('YYYY-MM-DD HH:mm')}
+                        tooltip={t.toString()} maincopy={false} tooltipcopy={false} />
                 }
             },
             {
@@ -100,6 +105,9 @@ export default class InstanceList extends React.Component {
             {
                 title: 'IAM Role',
                 dataIndex: 'iam_role_name',
+                render: (text) => {
+                    return <Copy text={text} trim={20} maincopy={false} />
+                }
             },
         ]
     }
@@ -111,14 +119,14 @@ export default class InstanceList extends React.Component {
                 { label: 'Region / AZ', value: [details.region, details.az] },
                 { label: 'Instance Type', value: details.instance_type },
                 { label: 'Key Name', value: details.key_name },
-                { label: 'Launch Time', value: details.launch_time.$date },
+                { label: 'Launch Time', value: new Date(details.launch_time.$date).toISOString() },
                 { label: 'State', value: details.state },
                 {
                     label: 'Instance Profile / IAM Role',
                     copyable: false,
                     value: [
-                        <Copy text={details.iam_instance_profile_name} tooltip={details.iam_instance_profile_arn} />,
-                        <Copy text={details.iam_role_name} tooltip={details.iam_role_arn} />
+                        <Copy text={details.iam_instance_profile_name} tooltip={details.iam_instance_profile_arn} trim={32} />,
+                        <Copy text={details.iam_role_name} tooltip={details.iam_role_arn} trim={32} />
                     ]
                 },
             ]} />
@@ -126,8 +134,11 @@ export default class InstanceList extends React.Component {
                 <Tabs.TabPane tab="Network Interfaces" key="network">
                     <AWSNetworkInterfaces interfaces={details.network_interfaces} />
                 </Tabs.TabPane>
-                <Tabs.TabPane tab="Tags" key="Tag">
+                <Tabs.TabPane tab="Tags" key="tags">
                     <AWSTags tags={details.tags} />
+                </Tabs.TabPane>
+                <Tabs.TabPane tab="Security Groups" key="sgs">
+                    {this.renderSecurityGroups(details)}
                 </Tabs.TabPane>
             </Tabs>
         </Space>
@@ -135,5 +146,19 @@ export default class InstanceList extends React.Component {
 
     setActiveTabKey = (activeKey) => {
         this.setState({ activeTabKey: activeKey })
+    }
+
+    renderSecurityGroups = (details) => {
+        var rules = []
+        details.network_interfaces.forEach(intf => {
+            intf.security_groups.forEach(sg => {
+                var node = <Space direction="vertical" style={{ width: "100%" }} size="middle" key={intf.resource_id + sg.resource_id}>
+                    <span>{intf.resource_id} / {intf.subnet.name} / {intf.private_ip} / {sg.name}</span>
+                    <AWSSecurityGroupRules rulesList={sg.ingress_rules} />
+                </Space>
+                rules.push(node)
+            })
+        })
+        return <Space direction="vertical" style={{ width: "100%" }} size="middle">{rules}</Space>
     }
 }
