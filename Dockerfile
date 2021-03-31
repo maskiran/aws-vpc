@@ -1,7 +1,6 @@
 FROM node as ui
 COPY ui /svc
 WORKDIR /svc
-RUN apk update && apk add npm
 RUN npm install
 RUN npm run build
 
