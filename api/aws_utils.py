@@ -34,7 +34,10 @@ def get_boto3_resource(resource_name, region='us-east-1', creds=None):
     # (env AWS_PROFILE or default .aws/creds or instance metadata)
     client = boto3.client(resource_name, region_name=region,
                           config=config, **creds)
-    sts = boto3.client('sts', region_name=region, config=config, **creds)
+    if resource_name == 'sts':
+        sts = client
+    else:                          
+        sts = boto3.client('sts', region_name=region, config=config, **creds)
     account_id = sts.get_caller_identity()['Account']
     return client, account_id
 

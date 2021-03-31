@@ -1,7 +1,11 @@
 import argparse
+import datetime
 import logging
-from multiprocessing import Pool
+import json
+from multiprocessing import Process
 from pprint import pprint
+import sys
+import time
 
 from aws_utils import get_boto3_resource
 import aws_resources.vpc
@@ -24,6 +28,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 def sync_resources(region, creds, vpc_id=''):
     rsp = {}
     db.get_connection()
@@ -35,11 +40,15 @@ def sync_resources(region, creds, vpc_id=''):
     rsp['vpcs'] = aws_resources.vpc.sync(region, creds, vpc_id)
     rsp['route-tables'] = aws_resources.route_table.sync(region, creds, vpc_id)
     rsp['subnets'] = aws_resources.subnet.sync(region, creds, vpc_id)
-    rsp['security-groups'] = aws_resources.security_group.sync(region, creds, vpc_id)
+    rsp['security-groups'] = aws_resources.security_group.sync(
+        region, creds, vpc_id)
     rsp['instances'] = aws_resources.instance.sync(region, creds, vpc_id)
-    rsp['classic-load-balancers'] = aws_resources.classic_lb.sync(region, creds, vpc_id)
-    rsp['elastic-load-balancers'] = aws_resources.elastic_lb.sync(region, creds, vpc_id)
-    logging.info(rsp)
+    rsp['classic-load-balancers'] = aws_resources.classic_lb.sync(
+        region, creds, vpc_id)
+    rsp['elastic-load-balancers'] = aws_resources.elastic_lb.sync(
+        region, creds, vpc_id)
+    logging.info(json.dumps(rsp, indent=4))
+    db.close()
     return rsp
 
 
@@ -55,10 +64,29 @@ def main():
                 'role_arn': account.role_arn
             }
             accounts.append([region, creds])
+            print(account.name, region)
     db.close()
-    Pool().starmap(sync_resources, accounts)
+    processes = []
+    for account in accounts:
+        p = Process(target=sync_resources, args=account)
+        p.start()
+        processes.append(p)
+    for p in processes:
+        p.join()
     return
 
 
 if __name__ == "__main__":
-    main()
+    cur_date = lambda: datetime.datetime.now()
+    while True:
+        print('Starting sync cycle at %s' % datetime.datetime.now())
+        main()
+        print('Ending sync cycle at %s' % datetime.datetime.now())
+        sys.stdout.flush()
+        if len(sys.argv) >= 2:
+            print('Sleep 10 mins')
+            sys.stdout.flush()
+            time.sleep(10 * 60)
+            print('Wakeup sync cycle at %s' % datetime.datetime.now())
+        else:
+            break
