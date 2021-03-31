@@ -33,6 +33,7 @@ export default class ObjectTable extends React.Component {
     render() {
         // copyable comes from the component level and can be overwritten at the item level
         var defaultCopyable = _.defaultTo(this.props.copyable, true)
+        var defaultSeparaotr = _.defaultTo(this.props.separator, true)
         var data = this.props.data.map(item => {
             // can be overwritten by data item
             var copyable = _.defaultTo(item.copyable, defaultCopyable)
@@ -41,16 +42,21 @@ export default class ObjectTable extends React.Component {
                     tooltips: false
                 }
             }
+            var separator = _.defaultTo(item.separator, defaultSeparaotr)
             var descItem;
             if (React.isValidElement(item.value)) {
                 descItem = item.value
             } else {
                 // if value is array, separate them out
+                var descItem = []
                 if (Array.isArray(item.value)) {
-                    descItem = item.value.map((v, idx) => {
-                        return <Typography.Text copyable={copyable} key={idx}>{v}</Typography.Text>
+                    item.value.forEach((v, idx) => {
+                        if (idx !== 0) {
+                            descItem.push(<span key={'__slash' + idx}>{separator}</span>)
+                        }
+                        descItem.push(<Typography.Text copyable={copyable} key={idx}>{v}</Typography.Text>)
                     })
-                    descItem = <Space size="large">{descItem}</Space>
+                    descItem = <Space size="small">{descItem}</Space>
                 } else {
                     descItem = <Typography.Text copyable={copyable}>{item.value}</Typography.Text>
                 }
@@ -68,12 +74,16 @@ export default class ObjectTable extends React.Component {
 }
 
 ObjectTable.defaultProps = {
-    copyable: true
+    copyable: true,
+    separator: '/',
 }
 
 ObjectTable.propTypes = {
-    /** make the value copyable or not, defaults true. Can be overridden at data level */
+    /** make the value copyable or not, defaults true. Can be overridden at each item of the data level */
     copyable: PropTypes.bool,
+
+    /** separator for multivalues. default slash (/). Can be overridden at each item of the data level */
+    separator: PropTypes.string,
 
     /** list of objects to show in the descriptions table. each item is of the form
      * {'label': 'Label Value', 'value': 'Value of the item' / ReactNode, copyable: true/false, defaults to props.copyable}
@@ -82,7 +92,8 @@ ObjectTable.propTypes = {
         PropTypes.shape({
             label: PropTypes.node,
             value: PropTypes.node,
-            copyable: PropTypes.bool
+            copyable: PropTypes.bool,
+            separator: PropTypes.string,
         })
     )
 }
