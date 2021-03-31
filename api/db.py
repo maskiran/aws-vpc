@@ -1,13 +1,17 @@
 import datetime
 import json
 import os
-from mongoengine import get_db, connect
+from mongoengine import get_db, connect, disconnect
 from pymongo import ReplaceOne
 
 
 def get_connection():
     db_url = os.getenv('MONGODB_HOST', 'mongodb://localhost/aws')
     connect(host=db_url, connect=False)
+
+
+def close():
+    disconnect()
 
 
 def create_item(model_cls_name, item):
