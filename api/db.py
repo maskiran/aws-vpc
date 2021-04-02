@@ -81,7 +81,10 @@ def get_items(model_cls_name, json_output=True, page_size=25, page=1, sort='name
     for doc in docs:
         doc['id'] = doc['_id']['$oid']
         doc.pop('_id', None)
-        doc['date_added'] = doc['date_added']['$date']
+        if 'date_added' in doc:
+            doc['date_added'] = doc['date_added']['$date']
+        if 'last_updated' in doc:
+            doc['last_updated'] = doc['last_updated']['$date']
     next_page = page + 1
     if (next_page - 1) * page_size >= rsp.count():
         next_page = -1
@@ -110,7 +113,10 @@ def get_item(model_cls_name, **kwargs):
         item = json.loads(item.to_json())
         item['id'] = item['_id']['$oid']
         item.pop('_id', None)
-        item['date_added'] = item['date_added']['$date']
+        if 'date_added' in item:
+            item['date_added'] = item['date_added']['$date']
+        if 'last_updated' in item:
+            item['last_updated'] = item['last_updated']['$date']
         return item
 
 

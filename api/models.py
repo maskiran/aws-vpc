@@ -49,6 +49,8 @@ class Account(Document):
     secret_key = StringField()
     regions = ListField(StringField(), default=['us-east-1'])
     csp = StringField(default='aws')
+    account_number = StringField()
+    last_updated = DateTimeField()
 
 
 class Vpc(BaseDocument):
