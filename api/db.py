@@ -118,6 +118,8 @@ def get_item(model_cls_name, **kwargs):
         if 'last_updated' in item:
             item['last_updated'] = item['last_updated']['$date']
         return item
+    else:
+        return {}
 
 
 def delete_items(model_cls_name, **kwargs):

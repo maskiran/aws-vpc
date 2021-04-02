@@ -116,6 +116,7 @@ def get_targets(client, target_arn, target_groups_list=None):
     for tgt in client.describe_target_health(TargetGroupArn=target_arn)['TargetHealthDescriptions']:
         item = {
             'resource_id': tgt['Target']['Id'],
+            'name': db.get_item(models.Instance, resource_id=tgt['Target']['Id']).get('name', ''),
             'target_port': tgt['Target']['Port'],
             'target_protocol': tgt_group['Protocol'],
         }
