@@ -57,6 +57,8 @@ def main():
     db.get_connection()
     accounts = []
     for account in db.get_items(models.Account, page_size=0, json_output=False):
+        account.last_updated = datetime.datetime.utcnow()
+        account.save()
         for region in account.regions:
             creds = {
                 'aws_access_key_id': account.access_key,
