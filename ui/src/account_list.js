@@ -68,7 +68,7 @@ export default class AccountList extends React.Component {
                 dataIndex: 'last_updated',
                 render: (text) => {
                     var t = dayjs(text)
-                    return <Copy text={t.format('YYYY-MM-DD HH:mm')}
+                    return <Copy text={t.format('YYYY-MM-DD HH:mm:ss')}
                         tooltip={t.toString()} maincopy={false} tooltipcopy={false} />
                 }
             },

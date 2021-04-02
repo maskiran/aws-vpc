@@ -20,7 +20,7 @@ def vpc_dashboard(vpc_id=None):
         # 'instances': models.Instance.objects.search_text(vpc_id).count(),
         # 'load_balancers': models.LoadBalancer.objects.search_text(vpc_id).count(),
         'regions': len(models.Vpc.objects().distinct('region')),
-        'accounts': len(models.Vpc.objects().distinct('account_id')),
+        'accounts': models.Account.objects.count(),
         'vpcs': models.Vpc.objects.count(),
         'subnets': models.Subnet.objects(**query).count(),
         'security_groups': models.SecurityGroup.objects(**query).count(),

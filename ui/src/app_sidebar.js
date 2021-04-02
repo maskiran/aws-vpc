@@ -38,7 +38,7 @@ export default class AppSidebar extends React.Component {
             <Menu mode="inline" theme="light" selectedKeys={[sidebarKey]} style={{ minHeight: "100%" }}>
                 <Menu.ItemGroup key="all-vpcs" className="sidebar-menu-itemgroup" title="VPC Selector">
                     <Menu.Item key='/accounts' icon={getIcon('accounts')}>
-                        <Link to={'/accounts'}>Accounts</Link>
+                        <Link to={'/accounts'}>Accounts ({this.state.vpcStats.accounts})</Link>
                     </Menu.Item>
                     <Menu.Item key='/vpcs' icon={getIcon('vpcs')}>
                         <Link to={'/vpcs'}>VPCs ({this.state.vpcStats.vpcs})</Link>
