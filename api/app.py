@@ -11,6 +11,7 @@ import apiresources.security_group
 import apiresources.subnet
 import apiresources.load_balancer
 import apiresources.crawl
+import apiresources.account
 
 app = Flask(__name__)
 
@@ -35,6 +36,7 @@ app.register_blueprint(apiresources.security_group.app,
 app.register_blueprint(apiresources.instance.app, url_prefix='/instances')
 app.register_blueprint(apiresources.load_balancer.app,
                        url_prefix='/load-balancers')
+app.register_blueprint(apiresources.account.app, url_prefix='/accounts')
 
 
 if __name__ == "__main__":
