@@ -1,82 +1,102 @@
 import React from 'react'
-import { Menu } from 'antd'
+import { Input, Menu } from 'antd'
 import { Link } from 'react-router-dom'
-import { DashboardOutlined, CloseCircleOutlined } from '@ant-design/icons'
-import { vpcFilter } from './utils'
+import { DashboardOutlined, CloseCircleOutlined, HomeOutlined } from '@ant-design/icons'
+import { Copy } from './utils'
 import axios from 'axios'
 import getIcon from './icons'
+import qs from 'query-string'
 
 
 export default class AppSidebar extends React.Component {
     state = {
-        vpcStats: {}
+        dashboard: {},
+        searchVal: qs.parse(this.props.location.search).search,
     }
 
     componentDidMount() {
-        this.getVpcStats()
+        this.getDashboard()
     }
 
     componentDidUpdate(prevProps) {
         if (this.props.location.search !== prevProps.location.search) {
-            this.getVpcStats()
+            this.getDashboard()
+            var newSearch = qs.parse(this.props.location.search).search
+            this.setState({ searchVal: newSearch })
         }
     }
 
     render() {
         var sidebarKey = this.props.location.pathname
-        var vpcId = vpcFilter(this.props.location.search, false)
-        var vpcSearch = vpcFilter(this.props.location.search)
-        var vpcText = "All VPCs"
-        if (vpcId) {
-            vpcText = <>
-                {vpcId}
-                <Link to="/vpcs"><CloseCircleOutlined style={{ marginLeft: "10px" }} /></Link>
+        var searchArgs = this.props.location.search
+        var groupText = "All VPCs"
+        if (searchArgs) {
+            // get search or vpc_id
+            var args = qs.parse(this.props.location.search)
+            // add icon to clear the search go to the current searchless page
+            groupText = <>
+                <Copy text={args.search || args.vpc_id} maincopy={false} trim={22} />
+                <Link to={this.props.location.pathname}><CloseCircleOutlined style={{ marginLeft: "10px" }} /></Link>
             </>
         }
-        vpcText = <span style={{ fontSize: "0.9em" }}>{vpcText}</span>
-        return (
-            <Menu mode="inline" theme="light" selectedKeys={[sidebarKey]} style={{ minHeight: "100%" }}>
-                <Menu.ItemGroup key="all-vpcs" className="sidebar-menu-itemgroup" title="VPC Selector">
+        return <>
+            <div style={{ margin: "20px 16px" }}>
+                <Input.Search value={this.state.searchVal} onChange={this.handleSearchChange} onSearch={this.handleSearch} />
+            </div>
+            <Menu mode="inline" theme="dark" selectedKeys={[sidebarKey]}>
+                <Menu.ItemGroup key="all-vpcs" className="sidebar-menu-itemgroup" title="Home">
                     <Menu.Item key='/accounts' icon={getIcon('accounts')}>
-                        <Link to={'/accounts'}>Accounts ({this.state.vpcStats.accounts})</Link>
-                    </Menu.Item>
-                    <Menu.Item key='/vpcs' icon={getIcon('vpcs')}>
-                        <Link to={'/vpcs'}>VPCs ({this.state.vpcStats.vpcs})</Link>
+                        <Link to={'/accounts'}>Accounts ({this.state.dashboard.accounts})</Link>
                     </Menu.Item>
                     <Menu.Item key='/recentvpcs' icon={getIcon('vpcs')}>
                         <Link to={'/recentvpcs'}>Recent VPCs</Link>
                     </Menu.Item>
                 </Menu.ItemGroup>
 
-                <Menu.ItemGroup key="filtered-vpc" className="sidebar-menu-itemgroup" title={vpcText} >
-                    <Menu.Item key='/vpcdashboard' icon={<DashboardOutlined />}>
-                        <Link to={'/vpcdashboard' + vpcSearch}>VPC Dashboard</Link>
+                <Menu.ItemGroup key="filtered-vpc" className="sidebar-menu-itemgroup" title={groupText} >
+                    <Menu.Item key='/dashboard' icon={<DashboardOutlined />}>
+                        <Link to={'/dashboard' + searchArgs}>Dashboard</Link>
+                    </Menu.Item>
+                    <Menu.Item key='/vpcs' icon={getIcon('vpcs')}>
+                        <Link to={'/vpcs' + searchArgs}>VPCs ({this.state.dashboard.vpcs})</Link>
                     </Menu.Item>
                     <Menu.Item key='/route-tables' icon={getIcon('route-tables')}>
-                        <Link to={'/route-tables' + vpcSearch}>Route Tables ({this.state.vpcStats.route_tables})</Link>
+                        <Link to={'/route-tables' + searchArgs}>Route Tables ({this.state.dashboard.route_tables})</Link>
                     </Menu.Item>
                     <Menu.Item key='/subnets' icon={getIcon('subnets')}>
-                        <Link to={'/subnets' + vpcSearch}>Subnets ({this.state.vpcStats.subnets})</Link>
+                        <Link to={'/subnets' + searchArgs}>Subnets ({this.state.dashboard.subnets})</Link>
                     </Menu.Item>
                     <Menu.Item key='/security-groups' icon={getIcon('security-groups')}>
-                        <Link to={'/security-groups' + vpcSearch}>Security Groups ({this.state.vpcStats.security_groups})</Link>
+                        <Link to={'/security-groups' + searchArgs}>Security Groups ({this.state.dashboard.security_groups})</Link>
                     </Menu.Item>
                     <Menu.Item key='/instances' icon={getIcon('instances')}>
-                        <Link to={'/instances' + vpcSearch}>Instances ({this.state.vpcStats.instances})</Link>
+                        <Link to={'/instances' + searchArgs}>Instances ({this.state.dashboard.instances})</Link>
                     </Menu.Item>
                     <Menu.Item key='/load-balancers' icon={getIcon('load-balancers')}>
-                        <Link to={'/load-balancers' + vpcSearch}>Load Balancers ({this.state.vpcStats.load_balancers})</Link>
+                        <Link to={'/load-balancers' + searchArgs}>Load Balancers ({this.state.dashboard.load_balancers})</Link>
+                    </Menu.Item>
+                    <Menu.Item key='/tgw-attachments' icon={getIcon('tgw-attachments')}>
+                        <Link to={'/tgw-attachments' + searchArgs}>TGW Attachments({this.state.dashboard.tgw_attachments})</Link>
                     </Menu.Item>
                 </Menu.ItemGroup>
             </Menu>
-        )
+        </>
     }
 
-    getVpcStats = () => {
-        var vpcId = vpcFilter(this.props.location.search, false)
-        var url = '/api/vpcdashboard/' + vpcId
+    getDashboard = () => {
+        var url = '/api/dashboard' + this.props.location.search
         axios.get(url).then(rsp => {
-            this.setState({ vpcStats: rsp.data })
+            this.setState({ dashboard: rsp.data })
         })
     }
+
+    handleSearchChange = (e) => {
+        this.setState({ searchVal: e.target.value })
+    }
+
+    handleSearch = (text) => {
+        var search = "search=" + text
+        this.props.history.push({ search: search })
+    }
+
 }

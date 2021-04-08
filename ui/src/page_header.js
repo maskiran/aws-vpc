@@ -1,66 +1,38 @@
 import React from 'react'
-import { ReloadOutlined } from '@ant-design/icons'
-import { Button, Menu, notification, Spin } from 'antd'
-import axios from 'axios'
-import { vpcFilter, getResponseErrorMessage } from './utils'
+import { Input, Menu, Row, Col } from 'antd'
+import qs from 'query-string'
 
 export default class PageHeader extends React.Component {
     state = {
-        vpcDetails: {},
-        crawling: false,
-        vpcId: vpcFilter(this.props.location.search, false),
+        searchVal: qs.parse(this.props.location.search).search
     }
 
-    componentDidMount() {
-        this.getVpcDetails()
-    }
-
-    componentDidUpdate(prevProps) {
-        var newVpcId = vpcFilter(this.props.location.search, false)
-        var oldVpcId = vpcFilter(prevProps.location.search, false)
-        if (oldVpcId != newVpcId) {
-            this.setState({ vpcId: newVpcId })
-            this.getVpcDetails(newVpcId)
+    componentDidUpdate = (prevProps) => {
+        // update search value if the user naviagtes back/forth in the page
+        var oldSearch = qs.parse(prevProps.location.search).search 
+        var newSearch = qs.parse(this.props.location.search).search
+        if (oldSearch !== newSearch) {
+            this.setState({searchVal: newSearch})
         }
     }
 
     render() {
-        if (this.state.vpcId) {
-            return <Menu mode="horizontal" theme="dark">
-                <span style={{ float: "right" }}>
-                    <Button type="primary" icon={<ReloadOutlined />}
-                        disabled={this.state.crawling}
-                        onClick={this.recrawlVpc}>
-                        Re-Crawl VPC Resources
-                        {this.state.crawling && <Spin style={{ marginLeft: "16px" }} />}
-                    </Button>
-                </span>
-            </Menu >
-        } else {
-            return null
-        }
+        return <Menu mode="horizontal" theme="dark">
+            <Menu.Item style={{ width: "50%", marginLeft: "25%" }}>
+                <Input.Search style={{ verticalAlign: "middle" }}
+                    value={this.state.searchVal}
+                    onChange={this.handleSearchChange}
+                    onSearch={this.handleSearch} />
+            </Menu.Item>
+        </Menu >
     }
 
-    getVpcDetails = (vpcId) => {
-        if (typeof vpcId === "undefined") {
-            vpcId = this.state.vpcId
-        }
-        if (vpcId) {
-            axios.get('/api/vpcs/' + vpcId).then(rsp => {
-                this.setState({ vpcDetails: rsp.data })
-            })
-        }
+    handleSearchChange  = (e) => {
+        this.setState({searchVal: e.target.value})
     }
 
-    recrawlVpc = () => {
-        var url = '/api/crawl/' + this.state.vpcDetails.region + '/' + this.state.vpcDetails.vpc_id
-        this.setState({ crawling: true })
-        axios.get(url).then(rsp => {
-        }).catch(err => {
-            var msg = getResponseErrorMessage(err)
-            notification.error({ duration: 0, message: msg })
-        }).finally((rsp) => {
-            this.setState({ crawling: false })
-        })
+    handleSearch = (text) => {
+        var search = "search=" + text
+        this.props.history.push({ search: search })
     }
 }

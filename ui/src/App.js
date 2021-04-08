@@ -14,15 +14,14 @@ export default class App extends React.Component {
                 {/* <Layout.Header style={{ padding: "0px 20px" }}>
                     <Route path="/" component={PageHeader} />
                 </Layout.Header> */}
-                <Layout>
-                    <Layout.Sider collapsible width="250" theme="light"
-                        style={{ boxShadow: "0px 0px 10px 0px #777777" }}>
-                        <Route path="/" component={AppSidebar} />
-                    </Layout.Sider>
-                    <Layout.Content style={{ padding: "25px 25px", backgroundColor2: "red" }}>
-                        {Routes}
-                    </Layout.Content>
-                </Layout>
+                {/* <Layout> */}
+                <Layout.Sider collapsible width="270">
+                    <Route path="/" component={AppSidebar} />
+                </Layout.Sider>
+                <Layout.Content style={{ padding: "25px 25px", backgroundColor2: "red" }}>
+                    {Routes}
+                </Layout.Content>
+                {/* </Layout> */}
             </Layout>
         </BrowserRouter>
     }

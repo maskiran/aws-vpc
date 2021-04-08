@@ -4,25 +4,28 @@ import ItemsList from 'react-antd-itemslist'
 import { Space, Tabs } from 'antd'
 import AWSTags from './aws_tags'
 import AWSNetworkInterfaces from './aws_network_interfaces'
-import { vpcFilter, Copy } from './utils'
+import { Copy, RecrawlResource } from './utils'
 import ObjectTable from './object_table'
 import AWSSecurityGroupRules from './aws_security_group_rules'
 import dayjs from 'dayjs'
 
 export default class InstanceList extends React.Component {
-    filteredVpc = vpcFilter(this.props.location.search, false)
-    itemsListUrl = "/api/instances" + vpcFilter(this.props.location.search)
     itemBaseUrl = "/api/instances"
+
+    getItemsListUrl = () => {
+        return "/api/instances" + this.props.location.search
+    }
 
     state = {
         activeTabKey: "network",
         sgRules: [],
+        crawling: false,
     }
 
     render() {
         return <ItemsList
             tableTitle="Instances"
-            itemsListUrl={this.itemsListUrl}
+            itemsListUrl={this.getItemsListUrl()}
             itemBaseUrl={this.itemBaseUrl}
             indexColViewLink={true}
             columns={this.getTableColumns()}
@@ -32,6 +35,7 @@ export default class InstanceList extends React.Component {
             rowSelection={false}
             addButtonTitle={false}
             deleteButtonTitle={false}
+            searchSpan={0}
             itemViewer={this.renderSelectedItem}
             itemViewerEditLink={false}
             itemViewerWidth="60%"
@@ -114,9 +118,10 @@ export default class InstanceList extends React.Component {
 
     renderSelectedItem = (details) => {
         return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
+            <RecrawlResource resource={details} type="instance" />
             <ObjectTable data={[
                 { label: 'Name / Id', value: [details.name, details.resource_id] },
-                { label: 'Region / AZ', value: [details.region, details.az] },
+                { label: 'Account / Region / AZ', value: [details.account_id, details.region, details.az] },
                 { label: 'Instance Type', value: details.instance_type },
                 { label: 'Key Name', value: details.key_name },
                 { label: 'Launch Time', value: new Date(details.launch_time.$date).toISOString() },

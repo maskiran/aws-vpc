@@ -2,14 +2,16 @@ import React from 'react'
 import _ from 'lodash'
 import ItemsList from 'react-antd-itemslist'
 import { Space, Table, Tabs, Tooltip } from 'antd'
-import { vpcFilter, Copy } from './utils'
+import { Copy, RecrawlResource } from './utils'
 import ObjectTable from './object_table'
 import AWSTags from './aws_tags'
 
 export default class LoadBalancerList extends React.Component {
-    filteredVpc = vpcFilter(this.props.location.search, false)
-    itemsListUrl = "/api/load-balancers" + vpcFilter(this.props.location.search)
     itemBaseUrl = "/api/load-balancers"
+
+    getItemsListUrl = () => {
+        return "/api/load-balancers" + this.props.location.search
+    }
 
     state = {
         activeTabKey: "network",
@@ -18,7 +20,7 @@ export default class LoadBalancerList extends React.Component {
     render() {
         return <ItemsList
             tableTitle="Instances"
-            itemsListUrl={this.itemsListUrl}
+            itemsListUrl={this.getItemsListUrl()}
             itemBaseUrl={this.itemBaseUrl}
             indexColViewLink={true}
             columns={this.getTableColumns()}
@@ -28,6 +30,7 @@ export default class LoadBalancerList extends React.Component {
             rowSelection={false}
             addButtonTitle={false}
             deleteButtonTitle={false}
+            searchSpan={0}
             itemViewer={this.renderSelectedItem}
             itemViewerEditLink={false}
             history={this.props.history}
@@ -96,6 +99,8 @@ export default class LoadBalancerList extends React.Component {
 
     renderSelectedItem = (details) => {
         return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
+            {/* {details.type == 'network' && <RecrawlResource resource={details} type='elastic-lb' />}
+            {details.type == 'classic' && <RecrawlResource resource={details} type='classic-lb' />} */}
             <ObjectTable data={[
                 { label: 'Name', value: details['name'] },
                 { label: 'ARN', value: details['arn'] },

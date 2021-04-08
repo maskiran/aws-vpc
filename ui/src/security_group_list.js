@@ -1,20 +1,22 @@
 import React from 'react'
 import ItemsList from 'react-antd-itemslist'
-import { Space, Table, Tabs } from 'antd'
-import { vpcFilter, Copy } from './utils'
+import { Space, Tabs } from 'antd'
+import { Copy, RecrawlResource } from './utils'
 import ObjectTable from './object_table'
 import AWSSecurityGroupRules from './aws_security_group_rules'
 
 
 export default class SecurityGroupList extends React.Component {
-    filteredVpc = vpcFilter(this.props.location.search, false)
-    itemsListUrl = "/api/security-groups" + vpcFilter(this.props.location.search)
     itemBaseUrl = "/api/security-groups"
+
+    getItemsListUrl = () => {
+        return "/api/security-groups" + this.props.location.search
+    }
 
     render() {
         return <ItemsList
             tableTitle="Security Groups"
-            itemsListUrl={this.itemsListUrl}
+            itemsListUrl={this.getItemsListUrl()}
             itemBaseUrl={this.itemBaseUrl}
             indexColViewLink={true}
             columns={this.getTableColumns()}
@@ -24,6 +26,7 @@ export default class SecurityGroupList extends React.Component {
             rowSelection={false}
             addButtonTitle={false}
             deleteButtonTitle={false}
+            searchSpan={0}
             itemViewer={this.renderSelectedItem}
             itemViewerEditLink={false}
             history={this.props.history}
@@ -66,6 +69,7 @@ export default class SecurityGroupList extends React.Component {
 
     renderSelectedItem = (details) => {
         return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
+            <RecrawlResource resource={details} type='security-group' />
             <ObjectTable data={[
                 { label: 'Name', value: details.name },
                 { label: 'Id', value: details.resource_id },

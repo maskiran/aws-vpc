@@ -28,7 +28,8 @@ export default class RecentVpcList extends React.Component {
                 title: 'Name',
                 dataIndex: 'name',
                 render: (name, record) => {
-                    return <Link to={"/vpcdashboard?vpc_id=" + record.resource_id}>{name}</Link>
+                    var url = `/dashboard?vpc_id=${record.resource_id}&account_id=${record.account_id}&region=${record.region}`
+                    return <Link to={url}>{name}</Link>
                 }
             },
             {
@@ -47,7 +48,7 @@ export default class RecentVpcList extends React.Component {
                 title: 'CIDR',
                 dataIndex: 'cidr',
                 render: (cidr) => {
-                    return cidr.join(', ')
+                    return cidr ? cidr.join(', '): null
                 }
             }
         ]

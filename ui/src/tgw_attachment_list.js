@@ -1,20 +1,19 @@
 import React from 'react'
 import ItemsList from 'react-antd-itemslist'
-import { Space, Table, Typography } from 'antd'
+import { Space, Table, Tabs } from 'antd'
 import { Copy, RecrawlResource } from './utils'
 import ObjectTable from './object_table'
 
-export default class RouteTableList extends React.Component {
-    itemBaseUrl = "/api/route-tables"
+export default class TgwAttachmentList extends React.Component {
+    itemBaseUrl = "/api/tgw-attachments"
 
     getItemsListUrl = () => {
-        // search in the url can change dynamically, so get the url as a func
-        return "/api/route-tables" + this.props.location.search
+        return "/api/tgw-attachments" + this.props.location.search
     }
 
     render() {
         return <ItemsList
-            tableTitle="Route Tables"
+            tableTitle="Transit Gateway Attachments"
             itemsListUrl={this.getItemsListUrl()}
             itemBaseUrl={this.itemBaseUrl}
             indexColViewLink={true}
@@ -63,32 +62,65 @@ export default class RouteTableList extends React.Component {
                     return <Copy text={text} tooltip={record.vpc_id} maincopy={false} />
                 }
             },
+            {
+                title: 'Route Table',
+                dataIndex: 'route_table_id',
+            },
         ]
     }
 
     renderSelectedItem = (details) => {
-        var routeCols = [
+        var tgwRouteCols = [
             {
                 title: 'Destination',
                 dataIndex: 'destination'
             },
             {
                 title: 'Next-Hop',
-                dataIndex: 'next_hop'
+                dataIndex: 'vpc_name',
+            },
+            {
+                title: 'Via Attachment Id',
+                dataIndex: 'tgw_attachment_id',
+            },
+        ]
+        var vpcRouteCols = [
+            {
+                title: 'Destination',
+                dataIndex: 'destination'
+            },
+            {
+                title: 'Next-Hop',
+                dataIndex: 'next_hop',
             }
         ]
         return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
-            <RecrawlResource resource={details} type='route-table' />
+            <RecrawlResource resource={details} type='tgw-attachment' />
             <ObjectTable data={[
                 { label: 'Name', value: details.name },
                 { label: 'Id', value: details.resource_id },
-                { label: 'Region', value: details.region },
-                { label: 'Subnets', value: details.subnets },
+                { label: 'Region', value: [details.region] },
+                { label: 'Attched VPC', value: [details.vpc_name, details.vpc_id] },
+                { label: 'TGW Route Table', value: details.route_table_id },
             ]} />
-            <Typography.Title level={5}>Routes</Typography.Title>
-            <Table size="small" bordered pagination={false} rowSelection={false}
-                columns={routeCols} rowKey="destination"
-                dataSource={details.routes} />
+            <Tabs>
+                <Tabs.TabPane tab="TGW Side Routes" key="tgwroutes">
+                    <Table size="small" bordered pagination={false} rowSelection={false}
+                        columns={tgwRouteCols} rowKey="destination"
+                        dataSource={details.tgw_routes} />
+                </Tabs.TabPane>
+                <Tabs.TabPane tab="VPC Side Routes" key="vpcroutes">
+                    <Tabs>
+                        {Object.keys(details.vpc_routes).map(subnet => {
+                            return <Tabs.TabPane tab={"Subnet " + subnet} key={subnet}>
+                                <Table size="small" bordered pagination={false} rowSelection={false}
+                                    columns={vpcRouteCols} rowKey="destination"
+                                    dataSource={details.vpc_routes[subnet]} />
+                            </Tabs.TabPane>
+                        })}
+                    </Tabs>
+                </Tabs.TabPane>
+            </Tabs>
         </Space>
     }
 }

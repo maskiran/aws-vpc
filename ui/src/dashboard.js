@@ -1,49 +1,63 @@
 import React from 'react'
 import axios from 'axios'
-import { vpcFilter } from './utils'
-import { Card, Row, Typography, Col, Statistic, Space, Tabs } from 'antd'
+import { getResponseErrorMessage } from './utils'
+import { Card, Row, Typography, Col, Statistic, Space, Tabs, Button, Spin, notification } from 'antd'
 import AWSTags from './aws_tags'
 import ObjectTable from './object_table'
 import getIcon from './icons'
 
-export default class VpcDashboard extends React.Component {
-    vpcId = vpcFilter(this.props.location.search, false)
-
+export default class Dashboard extends React.Component {
+    vpcId = ""
     state = {
         vpcDetails: {},
-        vpcStats: {},
+        dashboard: {},
+        crawling: false,
     }
 
     componentDidMount() {
-        this.getVpcDetails()
+        this.getDashboard()
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.location.search !== prevProps.location.search) {
+            this.getDashboard()
+        }
     }
 
     render() {
         var titleText = "All VPCs"
         if (this.state.vpcDetails.name) {
-            titleText = "VPC - " + this.state.vpcDetails.name + " / " + this.state.vpcDetails.vpc_id
+            titleText = <Space size="large">
+                <span>{this.state.vpcDetails.name} / {this.state.vpcDetails.vpc_id}</span>
+                {/* <Button type="primary" icon={<ReloadOutlined />}
+                    disabled={this.state.crawling}
+                    onClick={this.recrawlVpc}>
+                    Re-Crawl VPC Resources
+                </Button>
+                {this.state.crawling && <Spin style={{ marginLeft: "16px" }} />} */}
+            </Space>
         }
         return <Space direction="vertical" style={{ width: "100%" }} size="middle">
             <Typography.Title level={4}>{titleText}</Typography.Title>
             {this.renderVpcStatCards()}
-            {this.vpcId && this.renderVpcDetails()}
+            {this.state.vpcDetails.name && this.renderVpcDetails()}
         </Space>
     }
 
-    getVpcDetails = () => {
-        if (this.vpcId) {
-            axios.get('/api/vpcs/' + this.vpcId).then(rsp => {
-                this.setState({ vpcDetails: rsp.data })
-                // save the vpc to local storage as a cache
-                this.saveVpcCache(this.vpcId, rsp.data)
-            })
-        }
-        var url = '/api/vpcdashboard'
-        if (this.vpcId) {
-            url += '/' + this.vpcId
-        }
+    getDashboard = () => {
+        var url = '/api/dashboard' + this.props.location.search
         axios.get(url).then(rsp => {
-            this.setState({ vpcStats: rsp.data })
+            this.setState({ dashboard: rsp.data })
+            // if there is only 1 vpc that matches the stats, then get vpc details
+            if (rsp.data.vpcs == 1) {
+                axios.get('/api/vpcs' + this.props.location.search).then(rsp => {
+                    this.setState({ vpcDetails: rsp.data.items[0] })
+                    // save the vpc to local storage as a cache
+                    this.saveVpcCache(rsp.data.items[0])
+                })
+            } else {
+                this.setState({vpcDetails: {}})
+            }
         })
     }
 
@@ -52,40 +66,29 @@ export default class VpcDashboard extends React.Component {
             {
                 title: 'Subnets',
                 icon: getIcon('subnets'),
-                value: this.state.vpcStats.subnets,
-                color: "green"
+                value: this.state.dashboard.subnets,
             },
             {
                 title: 'Route Tables',
                 icon: getIcon('route-tables'),
-                value: this.state.vpcStats.route_tables,
-                color: "blue"
+                value: this.state.dashboard.route_tables,
             },
             {
                 title: 'Security Groups',
                 icon: getIcon('security-groups'),
-                value: this.state.vpcStats.security_groups,
-                color: "red"
+                value: this.state.dashboard.security_groups,
             },
             {
                 title: 'Instances',
                 icon: getIcon('instances'),
-                value: this.state.vpcStats.instances,
-                color: "red"
+                value: this.state.dashboard.instances,
             },
         ]
-        if (!this.vpcId) {
+        if (!this.state.vpcDetails.name) {
             stats.unshift({
-                title: 'Regions',
+                title: 'VPC Regions',
                 icon: getIcon('subnets'),
-                value: this.state.vpcStats.regions,
-                color: "green"
-            })
-            stats.unshift({
-                title: 'Accounts',
-                icon: getIcon('subnets'),
-                value: this.state.vpcStats.accounts,
-                color: "green"
+                value: this.state.dashboard.regions,
             })
         }
         var cardStyle = {
@@ -129,7 +132,8 @@ export default class VpcDashboard extends React.Component {
         </Tabs>
     }
 
-    saveVpcCache = (vpcId, vpcDetails) => {
+    saveVpcCache = (vpcDetails) => {
+        var vpcId = vpcDetails.resource_id
         var vpcList = JSON.parse(window.localStorage.getItem('vpcs') || "[]")
         var idx = vpcList.indexOf(vpcId)
         if (idx < 0) {
@@ -146,5 +150,18 @@ export default class VpcDashboard extends React.Component {
             window.localStorage.removeItem(deletedVpcId)
         }
         window.localStorage.setItem('vpcs', JSON.stringify(vpcList))
+    }
+
+    recrawlVpc = () => {
+        this.setState({ crawling: true })
+        var url = `/api/crawl/${this.state.vpcDetails.account_id}/${this.state.vpcDetails.region}/vpc/${this.state.vpcDetails.vpc_id}`
+        axios.get(url).then(rsp => {
+            window.location.reload()
+        }).catch(err => {
+            var msg = getResponseErrorMessage(err)
+            notification.error({ duration: 0, message: msg })
+        }).finally((rsp) => {
+            this.setState({ crawling: false })
+        })
     }
 }

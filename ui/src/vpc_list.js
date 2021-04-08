@@ -3,13 +3,17 @@ import ItemsList from 'react-antd-itemslist'
 import { Link } from 'react-router-dom'
 
 export default class VpcList extends React.Component {
-    itemsListUrl = "/api/vpcs"
+    itemBaseUrl = "/api/vpcs"
+
+    getItemsListUrl = () => {
+        return "/api/vpcs" + this.props.location.search
+    }
 
     render() {
         return <ItemsList
             tableTitle="VPCs"
-            itemsListUrl={this.itemsListUrl}
-            itemBaseUrl={this.itemsListUrl}
+            itemsListUrl={this.getItemsListUrl()}
+            itemBaseUrl={this.itemBaseUrl}
             indexColViewLink={true}
             columns={this.getTableColumns()}
             pagination
@@ -18,7 +22,7 @@ export default class VpcList extends React.Component {
             rowSelection={false}
             addButtonTitle={false}
             deleteButtonTitle={false}
-            // itemViewer={this.renderSelectedItem}
+            searchSpan={0}
             itemViewerEditLink={false}
             history={this.props.history}
         />
@@ -30,7 +34,8 @@ export default class VpcList extends React.Component {
                 title: 'Name',
                 dataIndex: 'name',
                 render: (name, record) => {
-                    return <Link to={"/vpcdashboard?vpc_id=" + record.resource_id}>{name}</Link>
+                    var url = `/dashboard?vpc_id=${record.resource_id}&account_id=${record.account_id}&region=${record.region}`
+                    return <Link to={url}>{name}</Link>
                 }
             },
             {

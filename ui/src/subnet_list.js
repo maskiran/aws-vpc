@@ -1,18 +1,20 @@
 import React from 'react'
 import ItemsList from 'react-antd-itemslist'
 import { Space, Table, Typography } from 'antd'
-import { vpcFilter, Copy } from './utils'
+import { Copy, RecrawlResource } from './utils'
 import ObjectTable from './object_table'
 
 export default class SubnetList extends React.Component {
-    filteredVpc = vpcFilter(this.props.location.search, false)
-    itemsListUrl = "/api/subnets" + vpcFilter(this.props.location.search)
     itemBaseUrl = "/api/subnets"
+
+    getItemsListUrl = () => {
+        return "/api/subnets" + this.props.location.search
+    }
 
     render() {
         return <ItemsList
             tableTitle="Subnets"
-            itemsListUrl={this.itemsListUrl}
+            itemsListUrl={this.getItemsListUrl()}
             itemBaseUrl={this.itemBaseUrl}
             indexColViewLink={true}
             columns={this.getTableColumns()}
@@ -22,6 +24,7 @@ export default class SubnetList extends React.Component {
             rowSelection={false}
             addButtonTitle={false}
             deleteButtonTitle={false}
+            searchSpan={0}
             itemViewer={this.renderSelectedItem}
             itemViewerEditLink={false}
             history={this.props.history}
@@ -78,6 +81,7 @@ export default class SubnetList extends React.Component {
             }
         ]
         return <Space size="middle" direction="vertical" style={{ width: "100%" }}>
+            <RecrawlResource resource={details} type='subnet' />
             <ObjectTable data={[
                 { label: 'Name', value: details.name },
                 { label: 'Id', value: details.resource_id },
