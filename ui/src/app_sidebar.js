@@ -11,7 +11,6 @@ import qs from 'query-string'
 export default class AppSidebar extends React.Component {
     state = {
         dashboard: {},
-        searchVal: qs.parse(this.props.location.search).search,
     }
 
     componentDidMount() {
@@ -21,8 +20,6 @@ export default class AppSidebar extends React.Component {
     componentDidUpdate(prevProps) {
         if (this.props.location.search !== prevProps.location.search) {
             this.getDashboard()
-            var newSearch = qs.parse(this.props.location.search).search
-            this.setState({ searchVal: newSearch })
         }
     }
 
@@ -40,11 +37,10 @@ export default class AppSidebar extends React.Component {
             </>
         }
         return <>
-            <div style={{ margin: "20px 16px" }}>
-                <Input.Search value={this.state.searchVal} onChange={this.handleSearchChange} onSearch={this.handleSearch} />
-            </div>
-            <Menu mode="inline" theme="dark" selectedKeys={[sidebarKey]}>
-                <Menu.ItemGroup key="all-vpcs" className="sidebar-menu-itemgroup" title="Home">
+            <Menu mode="inline" theme="dark" selectedKeys={[sidebarKey]} theme="light"
+                style={{ borderRight: 0 }}>
+                <Menu.ItemGroup key="all-vpcs" className="sidebar-menu-itemgroup" title="Home"
+                    style={{ marginTop: "20px" }}>
                     <Menu.Item key='/accounts' icon={getIcon('accounts')}>
                         <Link to={'/accounts' + searchArgs}>Accounts ({this.state.dashboard.accounts})</Link>
                     </Menu.Item>
@@ -92,17 +88,4 @@ export default class AppSidebar extends React.Component {
             this.setState({ dashboard: rsp.data })
         })
     }
-
-    handleSearchChange = (e) => {
-        this.setState({ searchVal: e.target.value })
-    }
-
-    handleSearch = (text) => {
-        var search = "search=" + text
-        if (!text) {
-            search = null
-        }
-        this.props.history.push({ search: search })
-    }
-
 }
