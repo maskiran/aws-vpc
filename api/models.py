@@ -79,3 +79,13 @@ class LoadBalancer(BaseDocument):
 
 class TgwAttachment(BaseDocument):
     pass
+
+
+class VpcSyncTask(Document):
+    account_number = StringField()
+    region = StringField()
+    vpc_id = StringField()
+    vpc_name = StringField()
+    state = StringField()
+    start_date = DateTimeField()
+    end_date = DateTimeField()

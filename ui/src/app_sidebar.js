@@ -51,6 +51,9 @@ export default class AppSidebar extends React.Component {
                     <Menu.Item key='/recentvpcs' icon={getIcon('vpcs')}>
                         <Link to={'/recentvpcs' + searchArgs}>Recent VPCs</Link>
                     </Menu.Item>
+                    <Menu.Item key='/tasks' icon={getIcon('accounts')}>
+                        <Link to={'/tasks' + searchArgs}>Tasks</Link>
+                    </Menu.Item>
                 </Menu.ItemGroup>
 
                 <Menu.ItemGroup key="filtered-vpc" className="sidebar-menu-itemgroup" title={groupText} >

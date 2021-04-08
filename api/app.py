@@ -13,6 +13,7 @@ import apiresources.load_balancer
 import apiresources.crawl
 import apiresources.account
 import apiresources.tgw_attachment
+import apiresources.task
 
 app = Flask(__name__)
 
@@ -39,6 +40,7 @@ app.register_blueprint(apiresources.load_balancer.app,
                        url_prefix='/load-balancers')
 app.register_blueprint(apiresources.account.app, url_prefix='/accounts')
 app.register_blueprint(apiresources.tgw_attachment.app, url_prefix='/tgw-attachments')
+app.register_blueprint(apiresources.task.app, url_prefix='/tasks')
 
 
 if __name__ == "__main__":

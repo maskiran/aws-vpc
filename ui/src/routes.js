@@ -10,6 +10,7 @@ import Dashboard from './dashboard'
 import LoadBalancerList from './load_balancer_list'
 import AccountList from './account_list'
 import TgwAttachmentList from './tgw_attachment_list'
+import TaskList from './task_list'
 
 const Routes = (
     <Switch>
@@ -26,6 +27,7 @@ const Routes = (
         <Route exact path="/instances" component={InstanceList} />
         <Route exact path="/load-balancers" component={LoadBalancerList} />
         <Route exact path="/tgw-attachments" component={TgwAttachmentList} />
+        <Route exact path="/tasks" component={TaskList} />
     </Switch>
 )
 
