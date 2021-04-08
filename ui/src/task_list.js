@@ -15,11 +15,15 @@ export default class TaksList extends React.Component {
             indexColViewLink={true}
             columns={this.getTableColumns()}
             pagination
-            dataKey="name"
-            rowActions={['deleteItem']}
+            dataKey="id"
+            rowActions={[]}
             itemViewerEditLink={false}
             history={this.props.history}
+            addButtonTitle={false}
+            deleteButtonTitle={false}
             searchUrlParameter='ignore'
+            rowSelection={false}
+            indexColViewLink={false}
         />
     }
 
