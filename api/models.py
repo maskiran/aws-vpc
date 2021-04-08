@@ -75,3 +75,7 @@ class Instance(BaseDocument):
 
 class LoadBalancer(BaseDocument):
     pass
+
+
+class TgwAttachment(BaseDocument):
+    pass

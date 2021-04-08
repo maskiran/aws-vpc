@@ -1,8 +1,9 @@
 import boto3
 from botocore.config import Config
+import models
 
 
-def get_credentials(role_arn):
+def get_assumed_role_credentials(role_arn):
     # role_arn = 'arn:aws:iam::902505820678:role/mainaccount'
     sts = boto3.client('sts')
     assumed_role = sts.assume_role(
@@ -15,31 +16,55 @@ def get_credentials(role_arn):
     }
 
 
-def get_boto3_resource(resource_name, region='us-east-1', creds=None):
+def get_credentials_for_account(account_name='', account_number=''):
+    # use either account name or number to get the credentials
+    query = {}
+    if account_name:
+        query['name'] = account_name
+    elif account_number:
+        query['account_number'] = str(account_number)
+    account = models.Account.objects(**query).first()
+    if account:
+        rsp = {
+            'aws_access_key_id': account.access_key,
+            'aws_secret_access_key': account.secret_key,
+            'role_arn': account.role_arn
+        }
+    else:
+        rsp = {}
+    return rsp
+
+
+def get_boto3_resource(resource_name, region='us-east-1', creds=None, account_number=''):
+    # provide either creds (with aws_access_key_id and aws_secret_access_key) or account_number
+    # to use the default values from .aws/credentials you can leave both empty
     config = Config(
         retries={
             'max_attempts': 100,
             'mode': 'standard'
         }
     )
+    if account_number:
+        creds = get_credentials_for_account(account_number=account_number)
     if creds is None:
         creds = {}
     # check if creds have a role to assume
     if 'role_arn' in creds:
         role_arn = creds.pop('role_arn')
         if role_arn:
-            creds = get_credentials(creds['role_arn'])
+            creds = get_assumed_role_credentials(creds['role_arn'])
     # no role_arn: so the creds have the access_key and secret or
     # or None so boto3 can read from default locations
     # (env AWS_PROFILE or default .aws/creds or instance metadata)
     client = boto3.client(resource_name, region_name=region,
                           config=config, **creds)
-    if resource_name == 'sts':
-        sts = client
-    else:                          
-        sts = boto3.client('sts', region_name=region, config=config, **creds)
-    account_id = sts.get_caller_identity()['Account']
-    return client, account_id
+    if not account_number:
+        if resource_name == 'sts':
+            sts = client
+        else:
+            sts = boto3.client('sts', region_name=region, config=config, **creds)
+        account_number = sts.get_caller_identity()['Account']
+    return client, account_number
 
 
 def get_name_tag(tags_list, default_value='noname'):
