@@ -30,6 +30,7 @@ const AccountEditor = (props) => {
 export default class AccountList extends React.Component {
     itemsListUrl = "/api/accounts"
 
+    // dont want accounts to search on the "search" param, so ignore
     render() {
         return <ItemsList
             tableTitle="Accounts"
@@ -43,6 +44,7 @@ export default class AccountList extends React.Component {
             itemViewerEditLink={false}
             history={this.props.history}
             editor={AccountEditor}
+            searchUrlParameter='ignore'
         />
     }
 
