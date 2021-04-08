@@ -46,10 +46,10 @@ export default class AppSidebar extends React.Component {
             <Menu mode="inline" theme="dark" selectedKeys={[sidebarKey]}>
                 <Menu.ItemGroup key="all-vpcs" className="sidebar-menu-itemgroup" title="Home">
                     <Menu.Item key='/accounts' icon={getIcon('accounts')}>
-                        <Link to={'/accounts'}>Accounts ({this.state.dashboard.accounts})</Link>
+                        <Link to={'/accounts' + searchArgs}>Accounts ({this.state.dashboard.accounts})</Link>
                     </Menu.Item>
                     <Menu.Item key='/recentvpcs' icon={getIcon('vpcs')}>
-                        <Link to={'/recentvpcs'}>Recent VPCs</Link>
+                        <Link to={'/recentvpcs' + searchArgs}>Recent VPCs</Link>
                     </Menu.Item>
                 </Menu.ItemGroup>
 
@@ -96,6 +96,9 @@ export default class AppSidebar extends React.Component {
 
     handleSearch = (text) => {
         var search = "search=" + text
+        if (!text) {
+            search = null
+        }
         this.props.history.push({ search: search })
     }
 
