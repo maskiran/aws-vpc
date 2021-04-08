@@ -6,7 +6,7 @@ import db
 import models
 
 
-def sync(region, account_number, vpc_id='', lb_name=''):
+def sync(account_number, region, vpc_id='', lb_name=''):
     cur_date = datetime.datetime.utcnow()
     client, account_id = get_boto3_resource('elb', region,
                                             account_number=account_number)
@@ -37,12 +37,12 @@ def sync(region, account_number, vpc_id='', lb_name=''):
                 'created_time': item['CreatedTime'],
                 'subnets': [{
                     'resource_id': subnet,
-                    'name': db.get_item(models.Subnet, resource_id=subnet)['name']
+                    'name': db.get_item(models.Subnet, resource_id=subnet).get('name', '')
                 } for subnet in item['Subnets']],
                 'security_groups': [
                     {
                         'resource_id': sg,
-                        'name': db.get_item(models.SecurityGroup, resource_id=sg)['name']
+                        'name': db.get_item(models.SecurityGroup, resource_id=sg).get('name', '')
                     } for sg in item['SecurityGroups']],
                 'dns': item['DNSName'],
                 'listeners': get_listeners(item)

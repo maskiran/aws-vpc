@@ -6,7 +6,7 @@ import db
 import models
 
 
-def sync(region, account_number, vpc_id='', lb_name=''):
+def sync(account_number, region, vpc_id='', lb_name=''):
     cur_date = datetime.datetime.utcnow()
     client, account_id = get_boto3_resource('elbv2', region,
                                             account_number=account_number)
@@ -41,7 +41,7 @@ def sync(region, account_number, vpc_id='', lb_name=''):
                 'account_id': account_id,
                 'resource_id': item['LoadBalancerName'],
                 'vpc_id': item['VpcId'],
-                'vpc_name': db.get_item(models.Vpc, vpc_id=item['VpcId'])['name'],
+                'vpc_name': db.get_item(models.Vpc, vpc_id=item['VpcId']).get('name', ''),
                 'name': item['LoadBalancerName'],
                 'type': item['Type'],
                 'scheme': item.get('Scheme', ''),
@@ -50,7 +50,7 @@ def sync(region, account_number, vpc_id='', lb_name=''):
                 'created_time': item['CreatedTime'],
                 'subnets': [{
                     'resource_id': az['SubnetId'],
-                    'name': db.get_item(models.Subnet, resource_id=az['SubnetId'])['name']
+                    'name': db.get_item(models.Subnet, resource_id=az['SubnetId']).get('name', '')
                 } for az in item['AvailabilityZones']],
                 'listeners': get_listeners(client, item['LoadBalancerArn'],
                                            target_groups.get(item['LoadBalancerArn'], [])),

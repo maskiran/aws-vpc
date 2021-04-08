@@ -7,7 +7,6 @@ app = Blueprint('dashboard', __name__)
 
 @app.route('', strict_slashes=False)
 def dashboard():
-    print(request.args)
     rsp = {}
     rsp['accounts'] = models.Account.objects.count()
     if 'search' in request.args:

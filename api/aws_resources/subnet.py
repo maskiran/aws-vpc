@@ -5,7 +5,7 @@ import db
 import models
 
 
-def sync(region, account_number, vpc_id='', subnet_id=''):
+def sync(account_number, region, vpc_id='', subnet_id=''):
     cur_date = datetime.datetime.utcnow()
     client, account_id = get_boto3_resource('ec2', region,
                                             account_number=account_number)
@@ -30,7 +30,7 @@ def sync(region, account_number, vpc_id='', subnet_id=''):
                 'name': get_name_tag(item['Tags'], item['SubnetId']),
                 'tags': normalize_tags_list(item['Tags']),
                 'vpc_id': item['VpcId'],
-                'vpc_name': db.get_item(models.Vpc, resource_id=item['VpcId'])['name'],
+                'vpc_name': db.get_item(models.Vpc, resource_id=item['VpcId']).get('name', ''),
                 'cidr': item['CidrBlock'],
                 'az': item['AvailabilityZone'],
                 'arn': item['SubnetArn'],
@@ -65,6 +65,7 @@ def get_route_table(region, vpc_id, subnet_id):
     # if not add the main/default rtable
     rtables = models.RouteTable.objects(
         subnets=subnet_id, region=region)
+    rtable = {}
     if len(rtables) > 0:
         # explicit route table is associated
         rtable = rtables[0]
@@ -72,8 +73,9 @@ def get_route_table(region, vpc_id, subnet_id):
         # implicit/default route table is associated
         rtables = models.RouteTable.objects(
             main=True, vpc_id=vpc_id, region=region)
-        rtable = rtables[0]
-    return {
-        'name': rtable.name,
-        'resource_id': rtable.resource_id
-    }
+        if len(rtables) > 0:
+            rtable = rtables[0]
+    if rtable:
+        return {'name': rtable.name, 'resource_id': rtable.resource_id}
+    else:
+        return {'name': '', 'resource_id': ''}

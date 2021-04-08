@@ -7,7 +7,7 @@ import db
 import models
 
 
-def sync(region, account_number, vpc_id='', route_table_id=''):
+def sync(account_number, region, vpc_id='', route_table_id=''):
     cur_date = datetime.datetime.utcnow()
     client, account_id = get_boto3_resource('ec2', region,
                                             account_number=account_number)
@@ -33,7 +33,7 @@ def sync(region, account_number, vpc_id='', route_table_id=''):
                 'name': get_name_tag(item['Tags'], item['RouteTableId']),
                 'tags': normalize_tags_list(item['Tags']),
                 'vpc_id': item['VpcId'],
-                'vpc_name': db.get_item(models.Vpc, resource_id=item['VpcId'])['name'],
+                'vpc_name': db.get_item(models.Vpc, resource_id=item['VpcId']).get('name', ''),
                 'subnets': [assoc['SubnetId'] for assoc in item['Associations'] if not assoc['Main']],
                 'routes': get_routes(item['Routes']),
                 'main': is_main_rtable(item)

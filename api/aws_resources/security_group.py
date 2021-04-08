@@ -6,7 +6,7 @@ import db
 import models
 
 
-def sync(region, account_number, vpc_id='', security_group_id=''):
+def sync(account_number, region, vpc_id='', security_group_id=''):
     cur_date = datetime.datetime.utcnow()
     client, account_id = get_boto3_resource('ec2', region,
                                             account_number=account_number)

@@ -5,7 +5,8 @@ from aws_utils import get_boto3_resource, add_tags_as_keys, get_name_tag, normal
 import db
 import models
 
-def sync(region, account_number, vpc_id='', instance_id=''):
+
+def sync(account_number, region, vpc_id='', instance_id=''):
     cur_date = datetime.datetime.utcnow()
     client, account_id = get_boto3_resource('ec2', region,
                                             account_number=account_number)
@@ -19,7 +20,7 @@ def sync(region, account_number, vpc_id='', instance_id=''):
     added = 0
     for page in client.get_paginator('describe_instances').paginate(Filters=query):
         logging.info('Got page with reservation count %s',
-                 len(page['Reservations']))
+                     len(page['Reservations']))
         page_items = []
         for reservation in page['Reservations']:
             for item in reservation['Instances']:
@@ -38,7 +39,7 @@ def sync(region, account_number, vpc_id='', instance_id=''):
                     'launch_time': item['LaunchTime'],
                     'key_name': item.get('KeyName', ''),
                     'vpc_id': item['VpcId'],
-                    'vpc_name': db.get_item(models.Vpc, resource_id=item['VpcId'])['name'],
+                    'vpc_name': db.get_item(models.Vpc, resource_id=item['VpcId']).get('name', ''),
                     'iam_instance_profile_arn': item.get('IamInstanceProfile', {}).get('Arn', ''),
                     'iam_instance_profile_name': item.get('IamInstanceProfile', {}).get('Arn', '').split('/')[-1],
                     'network_interfaces': get_network_interfaces(item['NetworkInterfaces']),
@@ -72,6 +73,12 @@ def get_network_interfaces(rsp_interfaces_list):
     for intf in rsp_interfaces_list:
         subnet_details = db.get_item(
             models.Subnet, resource_id=intf['SubnetId'])
+        sg_info = []
+        for sg in intf['Groups']:
+            sg_info.append({
+                'name': sg['GroupName'],
+                'resource_id': sg['GroupId']
+            })
         interfaces.append({
             'resource_id': intf['NetworkInterfaceId'],
             'mac': intf['MacAddress'],
@@ -79,11 +86,10 @@ def get_network_interfaces(rsp_interfaces_list):
             'public_ip': intf.get('Association', {}).get('PublicIp', ''),
             'subnet': {
                 'resource_id': intf['SubnetId'],
-                'name': subnet_details['name']
+                'name': subnet_details.get('name', '')
             },
             'src_dst_check': intf['SourceDestCheck'],
-            'security_groups': [{'name': sg['GroupName'], 'resource_id': sg['GroupId']}
-                                for sg in intf['Groups']],
+            'security_groups': sg_info,
         })
     return interfaces
 

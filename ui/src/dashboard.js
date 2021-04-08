@@ -1,17 +1,17 @@
 import React from 'react'
 import axios from 'axios'
-import { getResponseErrorMessage } from './utils'
-import { Card, Row, Typography, Col, Statistic, Space, Tabs, Button, Spin, notification } from 'antd'
+import { Card, Row, Typography, Col, Statistic, Space, Tabs, Button, message } from 'antd'
 import AWSTags from './aws_tags'
 import ObjectTable from './object_table'
 import getIcon from './icons'
+import { ReloadOutlined } from '@ant-design/icons'
 
 export default class Dashboard extends React.Component {
     vpcId = ""
     state = {
         vpcDetails: {},
         dashboard: {},
-        crawling: false,
+        crawling: true,
     }
 
     componentDidMount() {
@@ -29,12 +29,11 @@ export default class Dashboard extends React.Component {
         if (this.state.vpcDetails.name) {
             titleText = <Space size="large">
                 <span>{this.state.vpcDetails.name} / {this.state.vpcDetails.vpc_id}</span>
-                {/* <Button type="primary" icon={<ReloadOutlined />}
+                <Button type="primary" icon={<ReloadOutlined />}
                     disabled={this.state.crawling}
                     onClick={this.recrawlVpc}>
                     Re-Crawl VPC Resources
                 </Button>
-                {this.state.crawling && <Spin style={{ marginLeft: "16px" }} />} */}
             </Space>
         }
         return <Space direction="vertical" style={{ width: "100%" }} size="middle">
@@ -54,6 +53,7 @@ export default class Dashboard extends React.Component {
                     this.setState({ vpcDetails: rsp.data.items[0] })
                     // save the vpc to local storage as a cache
                     this.saveVpcCache(rsp.data.items[0])
+                    this.isCrawling()
                 })
             } else {
                 this.setState({vpcDetails: {}})
@@ -153,15 +153,21 @@ export default class Dashboard extends React.Component {
     }
 
     recrawlVpc = () => {
-        this.setState({ crawling: true })
         var url = `/api/crawl/${this.state.vpcDetails.account_id}/${this.state.vpcDetails.region}/vpc/${this.state.vpcDetails.vpc_id}`
         axios.get(url).then(rsp => {
-            window.location.reload()
-        }).catch(err => {
-            var msg = getResponseErrorMessage(err)
-            notification.error({ duration: 0, message: msg })
-        }).finally((rsp) => {
-            this.setState({ crawling: false })
+            message.info('Recrawl Scheduled')
+            this.setState({crawling: true})
+        })
+    }
+
+    isCrawling = () => {
+        var url = `/api/tasks/iscrawling/${this.state.vpcDetails.account_id}/${this.state.vpcDetails.region}/${this.state.vpcDetails.vpc_id}`
+        axios.get(url).then(rsp => {
+            if (rsp.data.vpc_id) {
+                this.setState({crawling: true})
+            } else {
+                this.setState({crawling: false})
+            }
         })
     }
 }

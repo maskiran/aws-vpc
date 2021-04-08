@@ -4,7 +4,7 @@ from aws_utils import get_boto3_resource, add_tags_as_keys, get_name_tag, normal
 import db
 import models
 
-def sync(region, account_number, vpc_id='', attachment_id=''):
+def sync(account_number, region, vpc_id='', attachment_id=''):
     cur_date = datetime.datetime.utcnow()
     client, account_id = get_boto3_resource('ec2', region,
                                             account_number=account_number)
@@ -98,6 +98,6 @@ def get_tgw_routes(region, account_number, rtable_id):
             'destination': route['DestinationCidrBlock'],
             'vpc_id': attachment['ResourceId'],
             'tgw_attachment_id': attachment['TransitGatewayAttachmentId'],
-            'vpc_name': db.get_item(models.Vpc, resource_id=attachment['ResourceId'])['name']
+            'vpc_name': db.get_item(models.Vpc, resource_id=attachment['ResourceId']).get('name', '')
         })
     return routes

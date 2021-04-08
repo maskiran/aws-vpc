@@ -30,68 +30,70 @@ def parse_args():
     return args
 
 
-def sync_resources(region, account_number, vpc_id='', new_connection=True):
+def sync_account_region(account_number, region, vpc_id='', new_connection=True):
     rsp = {}
     if new_connection:
         db.get_connection()
+    file_name = '/tmp/account-%s-%s' % (account_number, region)
+    if vpc_id:
+        file_name = '%s-%s' % (file_name, vpc_id)
     logging.basicConfig(filemode='w', level=logging.INFO,
-                        filename='/tmp/account-%s-%s' % (
-                            account_number, region),
+                        filename=file_name,
                         format="%(asctime)s %(message)s")
     logging.info('Syncing Account %s %s %s', account_number, region, vpc_id)
-    rsp['vpcs'] = aws_resources.vpc.sync(region, account_number, vpc_id)
+    rsp['vpcs'] = aws_resources.vpc.sync(account_number, region, vpc_id)
     rsp['route-tables'] = aws_resources.route_table.sync(
-        region, account_number, vpc_id)
-    rsp['subnets'] = aws_resources.subnet.sync(region, account_number, vpc_id)
+        account_number, region, vpc_id)
+    rsp['subnets'] = aws_resources.subnet.sync(account_number, region, vpc_id)
     rsp['security-groups'] = aws_resources.security_group.sync(
-        region, account_number, vpc_id)
+        account_number, region, vpc_id)
     rsp['instances'] = aws_resources.instance.sync(
-        region, account_number, vpc_id)
+        account_number, region, vpc_id)
     rsp['classic-load-balancers'] = aws_resources.classic_lb.sync(
-        region, account_number, vpc_id)
+        account_number, region, vpc_id)
     rsp['elastic-load-balancers'] = aws_resources.elastic_lb.sync(
-        region, account_number, vpc_id)
+        account_number, region, vpc_id)
     rsp['tgw-attachments'] = aws_resources.tgw_attachment.sync(
-        region, account_number, vpc_id)
+        account_number, region, vpc_id)
     logging.info(json.dumps(rsp, indent=4))
     if new_connection:
         db.close()
     return rsp
 
 
-def wait_for_processes(process_list):
-    process_list = process_list[:]
-    while len(process_list):
-        finished = []
-        for idx, p in enumerate(process_list):
-            p.join(5)
-            if p.is_alive():
-                pass
-            else:
-                finished.append(idx)
-                print(p.name, 'completed')
-        # delete finished processes from the process_list
-        for idx in sorted(finished, reverse=True):
-            del(process_list[idx])
+def wait_for_processes(processes_dict):
+    while True:
+        for pid in list(processes_dict):
+            process = processes_dict[pid]
+            if process.is_alive():
+                continue
+            print('Completed', process.name)
+            process.join()
+            del(processes_dict[pid])
+        # if there are no processes left, break
+        if not processes_dict:
+            break
+        else:
+            time.sleep(5)
 
 
-def main():
+def sync_all_account_regions():
     # for each account and region do a sync in parallel (within account/region its sequential)
-    print('Starting sync cycle at %s' % datetime.datetime.now())
-    db.get_connection()
+    print('Starting sync all accounts/regions at %s' % datetime.datetime.now())
     accounts = []
-    for account in db.get_items(models.Account, page_size=0, json_output=False):
+    db.get_connection()
+    for account in models.Account.objects:
         for region in account.regions:
-            accounts.append([region, account.account_number])
+            accounts.append([account.account_number, region])
     db.close()
-    processes = []
+    processes = {}
     for account in accounts:
-        # account  is [region, account_number]
-        p = Process(target=sync_resources, args=(account),
-                    name='%s-%s' % (account[1], account[0]))
-        print(p.name, 'starting')
+        # account is [account_number, region]
+        pname = '%s-%s' % (account[0], account[1])
+        p = Process(target=sync_account_region, args=(account), name=pname)
+        print('Started', pname)
         p.start()
-        processes.append(p)
+        processes[p.pid] = p
     print('Started', len(processes), 'processes')
     wait_for_processes(processes)
     db.get_connection()
@@ -105,7 +107,7 @@ def main():
 
 if __name__ == "__main__":
     while True:
-        main()
+        sync_all_account_regions()
         if len(sys.argv) >= 2:
             print('Sleep 10 mins')
             sys.stdout.flush()
