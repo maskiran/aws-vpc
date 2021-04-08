@@ -5,15 +5,17 @@ from aws_utils import get_boto3_resource, add_tags_as_keys, get_name_tag, normal
 import db
 import models
 
-
-def sync(region, creds, vpc_id=''):
+def sync(region, account_number, vpc_id='', instance_id=''):
     cur_date = datetime.datetime.utcnow()
-    client, account_id = get_boto3_resource('ec2', region, creds)
+    client, account_id = get_boto3_resource('ec2', region,
+                                            account_number=account_number)
     logging.info('Syncing Instances %s %s %s', account_id, region, vpc_id)
     query = []
     if vpc_id:
-        query = [{'Name': 'vpc-id', 'Values': [vpc_id]}]
-    iam, _ = get_boto3_resource('iam', region, creds)
+        query.append({'Name': 'vpc-id', 'Values': [vpc_id]})
+    if instance_id:
+        query.append({'Name': 'instance-id', 'Values': [instance_id]})
+    iam, _ = get_boto3_resource('iam', region, account_number=account_number)
     added = 0
     for page in client.get_paginator('describe_instances').paginate(Filters=query):
         logging.info('Got page with reservation count %s',
@@ -51,11 +53,13 @@ def sync(region, creds, vpc_id=''):
     logging.info('Addition done')
     del_query = {
         'region': region,
-        'account_id': account_id,
+        'account_id': str(account_id),
         'date_added__ne': cur_date,
     }
     if vpc_id:
         del_query['vpc_id'] = vpc_id
+    if instance_id:
+        del_query['resource_id'] = instance_id
     deleted = db.delete_items(models.Instance, **del_query)
     logging.info('Delete done')
     rsp = {'added': added, 'deleted': deleted}
@@ -96,7 +100,3 @@ def set_iam_role(instance_item, iam):
             role_info = rsp['InstanceProfile']['Roles'][0]
     instance_item['iam_role_name'] = role_info.get('RoleName', '')
     instance_item['iam_role_arn'] = role_info.get('Arn', '')
-
-
-if __name__ == "__main__":
-    sync()

@@ -6,14 +6,23 @@ import db
 import models
 
 
-def sync(region, creds, vpc_id=''):
+def sync(region, account_number, vpc_id='', lb_name=''):
     cur_date = datetime.datetime.utcnow()
-    client, account_id = get_boto3_resource('elbv2', region, creds)
-    logging.info('Syncing Elastic Load balancers %s %s %s', account_id, region, vpc_id)
+    client, account_id = get_boto3_resource('elbv2', region,
+                                            account_number=account_number)
+    logging.info('Syncing Elastic Load balancers %s %s %s',
+                 account_id, region, vpc_id)
     if not vpc_id:
-        target_groups = get_all_target_groups(client, vpc_id)
+        target_groups = get_all_target_groups(client)
+    lb_names = []
+    if lb_name:
+        lb_names.append(lb_name)
     added = 0
-    for page in client.get_paginator('describe_load_balancers').paginate(PaginationConfig={'PageSize': 20}):
+    pagination = {'PageSize': 20}
+    if lb_name:
+        pagination = None
+    for page in client.get_paginator('describe_load_balancers').paginate(Names=lb_names,
+                                                                         PaginationConfig=pagination):
         logging.info('Got page with item count %s', len(page['LoadBalancers']))
         page_items = []
         for item in page['LoadBalancers']:
@@ -59,6 +68,8 @@ def sync(region, creds, vpc_id=''):
     }
     if vpc_id:
         del_query['vpc_id'] = vpc_id
+    if lb_name:
+        del_query['resource_id'] = lb_name
     deleted = db.delete_items(models.LoadBalancer, **del_query)
     logging.info('Delete done')
     rsp = {'added': added, 'deleted': deleted}
@@ -122,8 +133,3 @@ def get_targets(client, target_arn, target_groups_list=None):
         }
         data.append(item)
     return data
-
-
-if __name__ == "__main__":
-    db.get_connection()
-    sync()

@@ -1,3 +1,5 @@
+import models
+import db
 import datetime
 import logging
 from aws_utils import get_boto3_resource, add_tags_as_keys, get_name_tag, normalize_tags_list
@@ -5,13 +7,17 @@ import db
 import models
 
 
-def sync(region, creds, vpc_id=''):
+def sync(region, account_number, vpc_id='', route_table_id=''):
     cur_date = datetime.datetime.utcnow()
-    client, account_id = get_boto3_resource('ec2', region, creds)
-    logging.info('Syncing Route tables %s %s %s', account_id, region, vpc_id)
+    client, account_id = get_boto3_resource('ec2', region,
+                                            account_number=account_number)
+    logging.info('Syncing Route tables %s %s %s %s',
+                 account_id, region, vpc_id, route_table_id)
     query = []
     if vpc_id:
-        query = [{'Name': 'vpc-id', 'Values': [vpc_id]}]
+        query.append({'Name': 'vpc-id', 'Values': [vpc_id]})
+    if route_table_id:
+        query.append({'Name': 'route-table-id', 'Values': [route_table_id]})
     added = 0
     for page in client.get_paginator('describe_route_tables').paginate(Filters=query):
         logging.info('Got page with item count %s', len(page['RouteTables']))
@@ -39,11 +45,14 @@ def sync(region, creds, vpc_id=''):
     logging.info('Addition done')
     del_query = {
         'region': region,
-        'account_id': account_id,
+        'account_id': str(account_id),
         'date_added__ne': cur_date,
     }
     if vpc_id:
         del_query['vpc_id'] = vpc_id
+    if route_table_id:
+        del_query['resource_id'] = route_table_id
+
     deleted = db.delete_items(models.RouteTable, **del_query)
     logging.info('Delete done')
     rsp = {'added': added, 'deleted': deleted}
@@ -79,7 +88,3 @@ def is_main_rtable(route_table):
         if main is True:
             break
     return main
-
-
-if __name__ == "__main__":
-    sync()

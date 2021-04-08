@@ -5,9 +5,10 @@ import db
 import models
 
 
-def sync(region, creds, vpc_id=''):
+def sync(region, account_number, vpc_id=''):
     cur_date = datetime.datetime.utcnow()
-    client, account_id = get_boto3_resource('ec2', region, creds)
+    client, account_id = get_boto3_resource('ec2', region,
+                                            account_number=account_number)
     logging.info('Syncing VPCs %s %s %s', account_id, region, vpc_id)
     query = []
     if vpc_id:
@@ -36,7 +37,7 @@ def sync(region, creds, vpc_id=''):
     logging.info('Addition done')
     del_query = {
         'region': region,
-        'account_id': account_id,
+        'account_id': str(account_id),
         'date_added__ne': cur_date,
     }
     if vpc_id:
@@ -46,7 +47,3 @@ def sync(region, creds, vpc_id=''):
     rsp = {'added': added, 'deleted': deleted}
     logging.info(rsp)
     return rsp
-
-
-if __name__ == "__main__":
-    sync()
