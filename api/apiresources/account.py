@@ -25,6 +25,7 @@ def account_list():
         models.Account(account_number=account_id, **data).save()
         return data['name']
 
+
 @app.route('/<name>', methods=['DELETE'])
 def account(name):
     if request.method == 'DELETE':
