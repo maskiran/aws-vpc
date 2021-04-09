@@ -45,6 +45,7 @@ export default class AccountList extends React.Component {
             history={this.props.history}
             editor={AccountEditor}
             searchUrlParameter='ignore'
+            indexColViewLink={false}
         />
     }
 
