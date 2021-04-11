@@ -1,3 +1,7 @@
+td, th {
+    word-break: break-all;
+}
+
 .logo {
     float: left;
     margin-right: 32px;
@@ -22,7 +26,7 @@
     font-weight: bold;
     padding-top: 0px;
     padding-bottom: 0px;
-}    
+}
 
 .ant-menu-inline-collapsed .ant-menu-item-group-title {
     display: none;
