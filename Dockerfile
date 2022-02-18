@@ -1,4 +1,4 @@
-FROM node as ui
+FROM node:16 as ui
 COPY ui /svc
 WORKDIR /svc
 RUN npm install
