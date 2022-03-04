@@ -52,8 +52,9 @@ if __name__ == "__main__":
         db.get_connection()
         # check if there are any tasks in the db
         tasks = models.VpcSyncTask.objects(state='queued')
+        task_count = tasks.count()
         db.close()
-        if tasks:
+        if task_count:
             p = Process(target=sync_batch)
             p.start()
             processes[p.pid] = p
